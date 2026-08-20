@@ -121,7 +121,17 @@ function M.check()
   if engine == "luasnip" then
     ok("LuaSnip gefunden — Snippets werden registriert")
   elseif engine == "blink" then
-    ok("blink.cmp gefunden — Snippets werden ueber den runtimepath gefunden")
+    if snippets.in_blink_search_paths() then
+      ok("blink.cmp kennt das Snippetverzeichnis des Plugins")
+    else
+      warn("blink.cmp gefunden, kennt das Snippetverzeichnis aber nicht", {
+        "blink durchsucht nur stdpath('config')/snippets und friendly-snippets,",
+        "nicht den runtimepath. Suchpfade aktuell: "
+          .. table.concat(snippets.blink_search_paths(), ", "),
+        "Fix: :help neos-fusion-snippets  bzw.",
+        'require("neos_fusion.snippets").blink_hint() ausgeben lassen',
+      })
+    end
   else
     info("Keine Snippet-Engine gefunden. Snippets liegen als VSCode-JSON unter "
       .. snippets.snippets_dir())

@@ -438,6 +438,35 @@ test("Engine-Erkennung liefert luasnip, blink oder nil", function()
   truthy(engine == nil or engine == "luasnip" or engine == "blink", "unerwarteter Wert: " .. tostring(engine))
 end)
 
+test("blink-Suchpfade werden korrekt gelesen", function()
+  local sn = require("neos_fusion.snippets")
+  -- Ohne blink.cmp: leere Liste, Verzeichnis gilt als nicht erkannt.
+  eq(vim.tbl_count(sn.blink_search_paths()), 0, "keine Pfade ohne blink")
+  eq(sn.in_blink_search_paths(), false, "nicht erkannt")
+
+  -- Mit vorgetaeuschter blink-Konfiguration.
+  package.loaded["blink.cmp.config"] = {
+    sources = { providers = { snippets = { opts = { search_paths = { "/x/y" } } } } },
+  }
+  local paths = sn.blink_search_paths()
+  eq(paths[1], "/x/y", "Pfad gelesen")
+  eq(sn.in_blink_search_paths(), false, "fremder Pfad zaehlt nicht")
+
+  package.loaded["blink.cmp.config"] = {
+    sources = { providers = { snippets = { opts = { search_paths = { sn.snippets_dir() } } } } },
+  }
+  eq(sn.in_blink_search_paths(), true, "eigenes Verzeichnis erkannt")
+  package.loaded["blink.cmp.config"] = nil
+end)
+
+test("blink_hint nennt Verzeichnis und Spec", function()
+  local sn = require("neos_fusion.snippets")
+  local hint = sn.blink_hint()
+  truthy(hint:find("saghen/blink.cmp", 1, true) ~= nil, "Spec fehlt")
+  truthy(hint:find("search_paths", 1, true) ~= nil, "search_paths fehlt")
+  truthy(hint:find(sn.snippets_dir(), 1, true) ~= nil, "Verzeichnis fehlt")
+end)
+
 test("setup() ohne Snippet-Engine bricht nicht ab", function()
   -- In der Testumgebung ist weder LuaSnip noch blink.cmp installiert.
   local ok, err = pcall(require("neos_fusion.snippets").setup, true)
