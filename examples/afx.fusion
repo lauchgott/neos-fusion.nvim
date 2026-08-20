@@ -1,0 +1,41 @@
+# Beispiel: AFX-Details
+#
+# Zeigt: verschachtelte Tags, Spread-Attribute, Ausdruecke im Body,
+# AFX-Kommentare, Loop/Map und mehrzeilige Tags.
+
+prototype(Vendor.Site:Component.List) < prototype(Neos.Fusion:Component) {
+    items = ${[]}
+    modifier = 'default'
+
+    renderer = afx`
+        {/* AFX-Kommentar */}
+        <ul
+            class={'list list--' + props.modifier}
+            data-count={Array.length(props.items)}
+        >
+            <Neos.Fusion:Loop items={props.items} itemName="item">
+                <li class="list__item">
+                    <Vendor.Site:Component.Teaser
+                        title={item.title}
+                        text={item.text}
+                        link={item.link}
+                    />
+                </li>
+            </Neos.Fusion:Loop>
+        </ul>
+        <Neos.Fusion:Fragment @if.empty={Array.length(props.items) == 0}>
+            <p>Keine Eintraege.</p>
+        </Neos.Fusion:Fragment>
+    `
+}
+
+prototype(Vendor.Site:Content.Headline) < prototype(Neos.Neos:ContentComponent) {
+    title = ${q(node).property('title')}
+    level = ${q(node).property('level') || 2}
+
+    renderer = Neos.Fusion:Tag {
+        tagName = ${'h' + props.level}
+        content = ${props.title}
+        attributes.class = 'headline'
+    }
+}

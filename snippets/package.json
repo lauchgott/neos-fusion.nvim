@@ -1,0 +1,14 @@
+{
+  "name": "neos-fusion-nvim-snippets",
+  "version": "0.1.0",
+  "private": true,
+  "engines": { "vscode": "^1.70.0" },
+  "contributes": {
+    "snippets": [
+      {
+        "language": "fusion",
+        "path": "./fusion.json"
+      }
+    ]
+  }
+}

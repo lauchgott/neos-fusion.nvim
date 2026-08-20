@@ -1,0 +1,13 @@
+# Editor / Werkzeuge
+/.claude/
+/.idea/
+
+# Von :helptags erzeugt (lazy.nvim generiert sie beim Installieren neu)
+doc/tags
+
+# Lokale Serverinstallation, falls install_dir hierher zeigt
+/server/
+node_modules/
+
+# Logs aus Headless-Laeufen
+nvim.log

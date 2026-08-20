@@ -1,0 +1,163 @@
+{
+  "Neos.Fusion:Component": {
+    "prefix": "component",
+    "description": "Prototyp auf Basis von Neos.Fusion:Component mit AFX-Renderer",
+    "body": [
+      "prototype(${1:Vendor.Site}:${2:Component.Name}) < prototype(Neos.Fusion:Component) {",
+      "\t${3:title} = ''",
+      "",
+      "\trenderer = afx`",
+      "\t\t<div class=\"${4:class-name}\">",
+      "\t\t\t{props.${3:title}}",
+      "\t\t</div>",
+      "\t`",
+      "}",
+      "$0"
+    ]
+  },
+  "Content-Prototyp": {
+    "prefix": "contentcomponent",
+    "description": "Content-Prototyp auf Basis von Neos.Neos:ContentComponent",
+    "body": [
+      "prototype(${1:Vendor.Site}:${2:Content.Name}) < prototype(Neos.Neos:ContentComponent) {",
+      "\t${3:title} = \\${q(node).property('${3:title}')}",
+      "",
+      "\trenderer = afx`",
+      "\t\t<div class=\"${4:class-name}\">{props.${3:title}}</div>",
+      "\t`",
+      "}",
+      "$0"
+    ]
+  },
+  "Prototyp (leer)": {
+    "prefix": "prototype",
+    "description": "Prototyp-Definition",
+    "body": [
+      "prototype(${1:Vendor.Site}:${2:Name}) < prototype(${3:Neos.Fusion:Component}) {",
+      "\t$0",
+      "}"
+    ]
+  },
+  "Prototyp erweitern": {
+    "prefix": "extend",
+    "description": "Bestehenden Prototyp erweitern",
+    "body": ["prototype(${1:Neos.Neos:Page}) {", "\t$0", "}"]
+  },
+  "AFX-Renderer": {
+    "prefix": "renderer",
+    "description": "renderer mit AFX",
+    "body": ["renderer = afx`", "\t$0", "`"]
+  },
+  "Eel-Ausdruck": {
+    "prefix": "eel",
+    "description": "Eel-Ausdruck",
+    "body": ["\\${${1:props.value}}"]
+  },
+  "Neos.Fusion:Join": {
+    "prefix": "join",
+    "description": "Neos.Fusion:Join (ehemals Array)",
+    "body": ["${1:content} = Neos.Fusion:Join {", "\t${2:item} = ${3:''}", "}"]
+  },
+  "Neos.Fusion:Loop": {
+    "prefix": "loop",
+    "description": "Neos.Fusion:Loop (ehemals Collection)",
+    "body": [
+      "${1:items} = Neos.Fusion:Loop {",
+      "\titems = \\${${2:props.items}}",
+      "\titemName = '${3:item}'",
+      "\titemRenderer = afx`",
+      "\t\t$0",
+      "\t`",
+      "}"
+    ]
+  },
+  "Neos.Fusion:Map": {
+    "prefix": "map",
+    "description": "Neos.Fusion:Map (ehemals RawCollection)",
+    "body": [
+      "${1:items} = Neos.Fusion:Map {",
+      "\titems = \\${${2:props.items}}",
+      "\titemName = '${3:item}'",
+      "\titemRenderer = \\${${3:item}}",
+      "}"
+    ]
+  },
+  "Neos.Fusion:DataStructure": {
+    "prefix": "datastructure",
+    "description": "Neos.Fusion:DataStructure (ehemals RawArray)",
+    "body": ["${1:data} = Neos.Fusion:DataStructure {", "\t${2:key} = ${3:''}", "}"]
+  },
+  "Neos.Fusion:Case": {
+    "prefix": "case",
+    "description": "Neos.Fusion:Case mit Matchern",
+    "body": [
+      "${1:content} = Neos.Fusion:Case {",
+      "\t${2:matcherName} {",
+      "\t\tcondition = \\${${3:true}}",
+      "\t\trenderer = ${4:''}",
+      "\t}",
+      "",
+      "\tdefault {",
+      "\t\tcondition = true",
+      "\t\trenderer = ''",
+      "\t}",
+      "}"
+    ]
+  },
+  "Neos.Fusion:Tag": {
+    "prefix": "tag",
+    "description": "Neos.Fusion:Tag",
+    "body": [
+      "${1:element} = Neos.Fusion:Tag {",
+      "\ttagName = '${2:div}'",
+      "\tattributes.class = '${3:class-name}'",
+      "\tcontent = ${4:''}",
+      "}"
+    ]
+  },
+  "Neos.Fusion:Value": {
+    "prefix": "value",
+    "description": "Neos.Fusion:Value",
+    "body": ["${1:name} = Neos.Fusion:Value {", "\tvalue = \\${${2:props.value}}", "}"]
+  },
+  "Resource-URI": {
+    "prefix": "resource",
+    "description": "Statische Ressource referenzieren",
+    "body": ["'resource://${1:Vendor.Site}/Public/${2:Images/logo.svg}'"]
+  },
+  "@if": {
+    "prefix": "@if",
+    "description": "Bedingung",
+    "body": ["@if.${1:condition} = \\${${2:props.value} ? true : false}"]
+  },
+  "@process": {
+    "prefix": "@process",
+    "description": "Processor",
+    "body": ["@process.${1:name} = \\${${2:value}}"]
+  },
+  "@context": {
+    "prefix": "@context",
+    "description": "Kontextvariable setzen",
+    "body": ["@context.${1:name} = \\${${2:value}}"]
+  },
+  "@apply": {
+    "prefix": "@apply",
+    "description": "Eigenschaften uebernehmen",
+    "body": ["@apply.${1:name} = \\${${2:props}}"]
+  },
+  "Translation": {
+    "prefix": "translate",
+    "description": "Neos.Neos:Translation bzw. Translate-Helper",
+    "body": ["\\${Translation.translate('${1:id}', '${2:fallback}', [], '${3:Main}', '${4:Vendor.Site}')}"]
+  },
+  "fusion-ignore": {
+    "prefix": "ignore",
+    "description": "Diagnose des Language Servers fuer die naechste Zeile unterdruecken",
+    "body": ["// @fusion-ignore"]
+  },
+  "fusion-ignore-block": {
+    "prefix": "ignoreblock",
+    "description": "Diagnose des Language Servers fuer den Block unterdruecken",
+    "body": ["// @fusion-ignore-block"]
+  }
+}

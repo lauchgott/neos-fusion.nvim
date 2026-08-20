@@ -1,0 +1,50 @@
+# Beispiel: Root.fusion eines Site-Packages
+#
+# Typische Ablage:
+#
+#   <projekt>/
+#   ├── composer.json                     (require: neos/neos)
+#   ├── flow
+#   ├── Configuration/Settings.yaml
+#   └── DistributionPackages/
+#       └── Vendor.Site/
+#           ├── composer.json
+#           ├── Configuration/NodeTypes.yaml
+#           └── Resources/Private/Fusion/
+#               ├── Root.fusion           <- diese Datei
+#               └── Component/…
+#
+# Die Root-Erkennung des Plugins liefert hier `<projekt>`; der Language Server
+# durchsucht davon ausgehend `folders.packages` (Default u.a.
+# `DistributionPackages`) und darin `folders.fusion`
+# (Default u.a. `Resources/Private/Fusion`).
+
+include: Component/**/*.fusion
+include: Content/**/*.fusion
+
+prototype(Neos.Neos:Page) {
+    head.stylesheets.site = Neos.Fusion:Tag {
+        tagName = 'link'
+        attributes.rel = 'stylesheet'
+        attributes.href = Neos.Fusion:ResourceUri {
+            path = 'resource://Vendor.Site/Public/Styles/main.css'
+        }
+    }
+
+    body {
+        templatePath = 'resource://Vendor.Site/Private/Templates/Page/Default.html'
+
+        sectionName = 'content'
+
+        content.main = Neos.Neos:PrimaryContent {
+            nodePath = 'main'
+        }
+
+        # Meta-Eigenschaften
+        @context.mainNavigation = ${q(site).children('[instanceof Neos.Neos:Document]')}
+        @process.debug = ${value}
+    }
+}
+
+# Deprecated-Prototypen, die der Language Server markiert:
+# Neos.Fusion:Array -> Neos.Fusion:Join, Neos.Fusion:Collection -> Neos.Fusion:Loop
