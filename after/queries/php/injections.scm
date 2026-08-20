@@ -1,15 +1,15 @@
 ;; extends
 ;;
-;; Konservative Tree-sitter-Injection: Fusion/AFX in PHP-Heredocs, deren
-;; Bezeichner FUSION oder AFX lautet.
+;; Conservative Tree-sitter injection: Fusion/AFX inside PHP heredocs whose
+;; identifier is FUSION or AFX.
 ;;
 ;;   $fusion = <<<FUSION
 ;;   prototype(Vendor.Site:Foo) < prototype(Neos.Fusion:Component) { }
 ;;   FUSION;
 ;;
-;; Bewusst nur dieser Fall: eine pauschale Injection in PHP-Strings waere
-;; unzuverlaessig und wuerde normale PHP-Inhalte beschaedigen. `;; extends`
-;; sorgt dafuer, dass die Standard-Queries erhalten bleiben.
+;; Deliberately only this case: a blanket injection into PHP strings would be
+;; unreliable and would damage ordinary PHP content. `;; extends` makes sure
+;; the standard queries are kept.
 
 ((heredoc
    (heredoc_start) @_start

@@ -1,21 +1,21 @@
 " Vim syntax file
-" Language:     Neos.Fusion (inkl. AFX)
+" Language:     Neos.Fusion (incl. AFX)
 " Maintainer:   neos-fusion.nvim
 " License:      MIT
 "
-" Fallback-Syntax fuer den Fall, dass kein Tree-sitter-Parser `fusion`
-" installiert ist. Eigenstaendig entwickelt anhand der oeffentlichen
-" Fusion-Sprachdokumentation; es wurde kein fremdes Grammatikmaterial kopiert.
+" Fallback syntax for the case that no Tree-sitter parser `fusion` is
+" installed. Developed from scratch against the public Fusion language
+" documentation; no third-party grammar material was copied.
 "
-" Bewusst konservativ: alle mehrdeutigen Konstrukte (Strings, Eel, AFX) sind
-" Regionen. Dadurch koennen die Top-Level-Matches (Kommentare, Operatoren)
-" nicht in Strings oder eingebettete Sprachen hineinlaufen.
+" Deliberately conservative: all ambiguous constructs (strings, Eel, AFX) are
+" regions. That keeps the top-level matches (comments, operators) from bleeding
+" into strings or embedded languages.
 
 if exists('b:current_syntax')
   finish
 endif
 
-" `syntax = false` schaltet die Fallback-Syntax vollstaendig ab.
+" `syntax = false` disables the fallback syntax completely.
 if luaeval("(function() local ok, c = pcall(require, 'neos_fusion.config'); return ok and c.get().syntax == false end)()")
   finish
 endif
@@ -26,15 +26,15 @@ set cpo&vim
 syn case match
 syn sync minlines=100 maxlines=500
 
-" ---------------------------------------------------------------- Kommentare
+" ------------------------------------------------------------------ Comments
 syn keyword fusionTodo          contained TODO FIXME XXX NOTE HACK
 syn region  fusionBlockComment  start=+/\*+ end=+\*/+ contains=fusionTodo,@Spell keepend
 syn match   fusionLineComment   +//.*$+ contains=fusionTodo,@Spell
-" `#` leitet nur am Anfang eines Statements einen Kommentar ein. Ein `#` in
-" `${...}` oder in Strings wird durch die jeweiligen Regionen abgeschirmt.
+" `#` only starts a comment at the beginning of a statement. A `#` inside
+" `${...}` or inside strings is shielded by the respective regions.
 syn match   fusionHashComment   +^\s*#.*$+ contains=fusionTodo,@Spell
 
-" -------------------------------------------------------------------- Werte
+" ------------------------------------------------------------------- Values
 syn match   fusionNumber        "\<-\=\d\+\%(\.\d\+\)\?\>"
 syn keyword fusionBoolean       true false TRUE FALSE
 syn keyword fusionNull          null NULL
@@ -43,8 +43,8 @@ syn region  fusionStringS       start=+'+ skip=+\\.+ end=+'+ contains=@Spell
 syn region  fusionStringD       start=+"+ skip=+\\.+ end=+"+ contains=fusionEelInString,@Spell
 
 " ---------------------------------------------------------------- Eel / AFX
-" Eel-Ausdruecke `${ ... }`. `matchgroup` haelt die Begrenzer separat, damit
-" verschachtelte `{}` korrekt gezaehlt werden.
+" Eel expressions `${ ... }`. `matchgroup` keeps the delimiters separate so
+" that nested `{}` are counted correctly.
 syn region  fusionEel
       \ matchgroup=fusionEelDelimiter start=+\${+ end=+}+
       \ contains=fusionEelBraces,fusionEelString,fusionEelStringD,fusionEelNumber,fusionEelOperator,fusionEelHelper,fusionEelKeyword
@@ -56,22 +56,22 @@ syn region  fusionEelStringD    contained start=+"+ skip=+\\.+ end=+"+
 syn match   fusionEelNumber     contained "\<-\=\d\+\%(\.\d\+\)\?\>"
 syn match   fusionEelOperator   contained "[+\-*/%<>=!?:.|&]\|&&\|||"
 syn keyword fusionEelKeyword    contained true false null this props site node documentNode request
-" Eel-Helper-Aufrufe wie `Array.first(...)` oder `q(node).property(...)`
+" Eel helper calls such as `Array.first(...)` or `q(node).property(...)`
 syn match   fusionEelHelper     contained "\<\u\w*\%(\.\w\+\)*\ze\s*("
 syn match   fusionEelHelper     contained "\<q\ze("
 
-" Eel innerhalb doppelt gequoteter Strings (dort ist Interpolation ueblich).
+" Eel inside double-quoted strings (interpolation is common there).
 syn region  fusionEelInString   contained matchgroup=fusionEelDelimiter start=+\${+ end=+}+
       \ contains=fusionEelString,fusionEelNumber,fusionEelOperator,fusionEelHelper,fusionEelKeyword
 
-" AFX: `afx\`` ... `\`` — JSX-aehnliche Templatesprache.
+" AFX: `afx\`` ... `\`` — JSX-like template language.
 syn region  fusionAfx
       \ matchgroup=fusionAfxDelimiter start=+\<afx`+ end=+`+
       \ contains=fusionAfxTag,fusionAfxCloseTag,fusionAfxComment,fusionAfxExpr,fusionEel
       \ keepend extend
 
 syn region  fusionAfxComment    contained start=+{/\*+ end=+\*/}+ contains=fusionTodo,@Spell
-" `{ ... }` als Ausdruck im AFX-Body bzw. in Attributen
+" `{ ... }` as an expression in the AFX body or in attributes
 syn region  fusionAfxExpr       contained matchgroup=fusionAfxBrace start=+{+ end=+}+
       \ contains=fusionAfxExprInner,fusionEelString,fusionEelStringD,fusionEelNumber,fusionEelOperator,fusionEelHelper,fusionEelKeyword
 syn region  fusionAfxExprInner  contained matchgroup=fusionAfxBrace start=+{+ end=+}+
@@ -91,27 +91,27 @@ syn match   fusionAfxSpread     contained "{\.\.\."
 syn region  fusionAfxAttrValue  contained start=+"+ skip=+\\.+ end=+"+ contains=fusionEelInString
 syn region  fusionAfxAttrValue  contained start=+'+ skip=+\\.+ end=+'+
 
-" ------------------------------------------------------------- Sprachgeruest
+" ------------------------------------------------------------ Language frame
 " `prototype(Vendor.Site:Component)`
 syn region  fusionPrototypeCall
       \ matchgroup=fusionPrototypeKeyword start=+\<prototype(+ end=+)+
       \ contains=fusionPrototypeName oneline
 syn match   fusionPrototypeName contained "[A-Za-z_][A-Za-z0-9_.]*\%(:[A-Za-z_][A-Za-z0-9_.]*\)\?"
 
-" Dateiweite Anweisungen
+" File-wide statements
 syn match   fusionInclude       "^\s*include\s*:.*$" contains=fusionIncludeKeyword,fusionStringS,fusionStringD
 syn keyword fusionIncludeKeyword contained include
 syn match   fusionNamespace     "^\s*namespace\s*:.*$" contains=fusionNamespaceKeyword
 syn keyword fusionNamespaceKeyword contained namespace
 
-" Meta-Eigenschaften: @if, @process, @context, @position, @apply, @override, ...
+" Meta properties: @if, @process, @context, @position, @apply, @override, ...
 syn match   fusionMetaProperty  "@[A-Za-z_][A-Za-z0-9_]*"
 
-" Pfade links vom Operator, z.B. `page.body.content.main`
+" Paths left of the operator, e.g. `page.body.content.main`
 syn match   fusionPath          "^\s*\zs[A-Za-z_@][A-Za-z0-9_.:-]*\%(\s*\.\s*[A-Za-z_@][A-Za-z0-9_.:-]*\)*\ze\s*[<>=]"
       \ contains=fusionMetaProperty
 
-" Operatoren: Zuweisung, Kopie/Vererbung, Loeschen
+" Operators: assignment, copy/inheritance, unset
 syn match   fusionAssign        "="
 syn match   fusionCopy          "<\%(\s*prototype\)\@="
 syn match   fusionCopy          "^\s*[A-Za-z0-9_.@:-]\+\s*\zs<\ze\s"
@@ -119,7 +119,7 @@ syn match   fusionUnset         "^\s*[A-Za-z0-9_.@:-]\+\s*\zs>\ze\s*$"
 
 syn match   fusionBrace         "[{}]"
 
-" ------------------------------------------------------------- Verlinkungen
+" ---------------------------------------------------------- Highlight links
 hi def link fusionTodo              Todo
 hi def link fusionBlockComment      Comment
 hi def link fusionLineComment       Comment

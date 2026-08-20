@@ -1,14 +1,14 @@
---- neos-fusion.nvim — Neovim-Unterstuetzung fuer Neos CMS, Neos.Fusion und AFX.
+--- neos-fusion.nvim — Neovim support for Neos CMS, Neos.Fusion and AFX.
 ---
---- Das Modul ist ohne `setup()` gefahrlos ladbar: es registriert beim Import
---- nichts und faellt auf die Defaults aus `neos_fusion.config` zurueck.
+--- The module is safe to load without `setup()`: it registers nothing on
+--- import and falls back to the defaults from `neos_fusion.config`.
 local M = {}
 
 M.version = "0.1.0"
 
 local augroup = nil
 
---- Autocmds fuer Fusion-Buffer registrieren (idempotent).
+--- Registers the autocmds for Fusion buffers (idempotent).
 local function create_autocmds()
   local config = require("neos_fusion.config")
   local cfg = config.get()
@@ -19,12 +19,12 @@ local function create_autocmds()
     vim.api.nvim_create_autocmd("FileType", {
       group = augroup,
       pattern = cfg.server.filetypes,
-      desc = "Neos Fusion Language Server starten",
+      desc = "Start the Neos Fusion language server",
       callback = function(args)
-        -- Ein Fehler beim Start darf das Oeffnen der Datei nicht abbrechen.
+        -- A failure during startup must not abort opening the file.
         local ok, err = pcall(require("neos_fusion.lsp").start, args.buf)
         if not ok then
-          require("neos_fusion.util").error("Start fehlgeschlagen: " .. tostring(err))
+          require("neos_fusion.util").error("Startup failed: " .. tostring(err))
         end
       end,
     })
@@ -35,13 +35,13 @@ local function create_autocmds()
     vim.api.nvim_create_autocmd("FileType", {
       group = augroup,
       pattern = "fusion",
-      desc = "Tree-sitter fuer Fusion aktivieren, falls Parser vorhanden",
+      desc = "Enable Tree-sitter for Fusion if the parser is available",
       callback = function(args)
         local ok = pcall(vim.treesitter.start, args.buf, "fusion")
         if not ok and cfg.treesitter.notify_missing and not warned then
           warned = true
           require("neos_fusion.util").warn(
-            "Tree-sitter-Parser `fusion` fehlt — es wird die mitgelieferte Vim-Syntax verwendet.\n"
+            "Tree-sitter parser `fusion` missing — using the bundled Vim syntax instead.\n"
               .. "Installation: :TSInstall fusion"
           )
         end
@@ -50,7 +50,7 @@ local function create_autocmds()
   end
 end
 
---- Filetype-Erkennung registrieren.
+--- Registers filetype detection.
 local function register_filetypes()
   local cfg = require("neos_fusion.config").get()
   local extensions = {}
@@ -65,7 +65,7 @@ local function register_filetypes()
   end
 end
 
---- Einstiegspunkt.
+--- Entry point.
 ---@param opts table|nil
 ---@return table config
 function M.setup(opts)
@@ -76,8 +76,8 @@ function M.setup(opts)
   create_autocmds()
   require("neos_fusion.snippets").setup()
 
-  -- Bereits geoeffnete Fusion-Buffer nachtraeglich bedienen (z.B. wenn das
-  -- Plugin per `:Lazy load` nachgeladen wird).
+  -- Serve already open Fusion buffers after the fact (e.g. when the plugin is
+  -- loaded later through `:Lazy load`).
   if cfg.server.enable and cfg.server.autostart then
     for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
       if vim.api.nvim_buf_is_loaded(bufnr) and vim.tbl_contains(cfg.server.filetypes, vim.bo[bufnr].filetype) then
@@ -89,7 +89,7 @@ function M.setup(opts)
   return cfg
 end
 
---- Bequemer Zugriff fuer Nutzerkonfigurationen.
+--- Convenient access for user configurations.
 ---@return table
 function M.config()
   return require("neos_fusion.config").get()

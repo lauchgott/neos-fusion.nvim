@@ -1,4 +1,4 @@
---- ftplugin fuer Fusion.
+--- ftplugin for Fusion.
 if vim.b.did_ftplugin_neos_fusion then
   return
 end
@@ -9,8 +9,8 @@ local cfg = ok and config.get() or nil
 local editor = cfg and cfg.editor or { commentstring = "// %s", indent = true, shiftwidth = 4, expandtab = true }
 
 vim.bo.commentstring = editor.commentstring or "// %s"
--- Fusion kennt `//`, `#` und `/* */`. `b:` = Blank nach dem Zeichen noetig,
--- damit z.B. `#{...}` nicht als Kommentar gilt.
+-- Fusion knows `//`, `#` and `/* */`. `b:` = a blank after the character is
+-- required, so that e.g. `#{...}` does not count as a comment.
 vim.bo.comments = "s1:/*,mb:*,ex:*/,://,:#"
 
 if editor.indent ~= false then
@@ -22,7 +22,7 @@ if editor.indent ~= false then
 end
 
 vim.bo.suffixesadd = ".fusion"
--- Prototypnamen wie `Neos.Fusion:Component` als ein Wort behandeln.
+-- Treat prototype names such as `Neos.Fusion:Component` as one word.
 vim.opt_local.iskeyword:append({ ".", ":", "-" })
 
 vim.b.undo_ftplugin = table.concat({

@@ -1,5 +1,5 @@
--- Minimale Neovim-Konfiguration fuer die Tests. Bindet ausschliesslich dieses
--- Plugin ein, damit die Ergebnisse nicht von der Nutzerkonfiguration abhaengen.
+-- Minimal Neovim configuration for the tests. Loads this plugin only, so the
+-- results do not depend on the user configuration.
 local here = vim.fs.dirname(debug.getinfo(1, "S").source:sub(2))
 local root = vim.fs.dirname(here)
 

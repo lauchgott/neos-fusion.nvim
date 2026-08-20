@@ -1,14 +1,14 @@
-# Beispiel: AFX-Details
+# Example: AFX details
 #
-# Zeigt: verschachtelte Tags, Spread-Attribute, Ausdruecke im Body,
-# AFX-Kommentare, Loop/Map und mehrzeilige Tags.
+# Shows: nested tags, spread attributes, expressions in the body, AFX
+# comments, Loop/Map and multi-line tags.
 
 prototype(Vendor.Site:Component.List) < prototype(Neos.Fusion:Component) {
     items = ${[]}
     modifier = 'default'
 
     renderer = afx`
-        {/* AFX-Kommentar */}
+        {/* AFX comment */}
         <ul
             class={'list list--' + props.modifier}
             data-count={Array.length(props.items)}
@@ -24,7 +24,7 @@ prototype(Vendor.Site:Component.List) < prototype(Neos.Fusion:Component) {
             </Neos.Fusion:Loop>
         </ul>
         <Neos.Fusion:Fragment @if.empty={Array.length(props.items) == 0}>
-            <p>Keine Eintraege.</p>
+            <p>No entries.</p>
         </Neos.Fusion:Fragment>
     `
 }

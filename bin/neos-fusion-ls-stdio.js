@@ -2,32 +2,33 @@
 'use strict'
 
 /*
- * neos-fusion-ls-stdio.js — stdio-Wrapper fuer den Neos Fusion Language Server.
+ * neos-fusion-ls-stdio.js — stdio wrapper for the Neos Fusion language server.
  *
- * Warum es diesen Wrapper gibt
- * ----------------------------
- * `neos-fusion-ls` protokolliert ueber `console.log()`. Bei der offiziellen
- * VSCode-Extension laeuft der Server ueber `TransportKind.ipc`; dort landen
- * diese Zeilen harmlos in der Extension-Host-Konsole.
+ * Why this wrapper exists
+ * -----------------------
+ * `neos-fusion-ls` logs through `console.log()`. In the official VSCode
+ * extension the server runs over `TransportKind.ipc`, where those lines end up
+ * harmlessly in the extension host console.
  *
- * Ueber stdio (der einzige Transport, den Neovim spricht) schreibt
- * `console.log()` jedoch in denselben Stream wie das JSON-RPC-Framing. Schon
- * beim `initialize` gibt der Server mindestens eine Zeile
+ * Over stdio (the only transport Neovim speaks) `console.log()` writes into the
+ * same stream as the JSON-RPC framing. During `initialize` alone the server
+ * emits at least one line
  *
  *     [   INFO] <...> [LanguageServer] Added FusionWorkspace ...\n
  *
- * vor dem ersten `Content-Length:`-Header aus. Ein LSP-Client, der die Header
- * strikt parst, bricht daran ab.
+ * before the first `Content-Length:` header. Neovim 0.12 was measured to
+ * tolerate this, but the log lines are swallowed instead of reaching the LSP
+ * log, and a client that parses the headers strictly would break on them.
  *
- * Der Wrapper laedt den Server im selben Prozess und leitet vorher alle
- * console-Methoden auf stderr um. Das JSON-RPC-Framing selbst schreibt
- * `vscode-languageserver` direkt ueber `process.stdout.write()` und ist davon
- * nicht betroffen.
+ * The wrapper loads the server in the same process and redirects all console
+ * methods to stderr beforehand. The JSON-RPC framing itself is written by
+ * `vscode-languageserver` directly through `process.stdout.write()` and is not
+ * affected.
  *
- * Aufruf:
- *   node neos-fusion-ls-stdio.js <pfad/zu/neos-fusion-ls/out/main.js> --stdio
+ * Usage:
+ *   node neos-fusion-ls-stdio.js <path/to/neos-fusion-ls/out/main.js> --stdio
  *
- * Der Server-Pfad kann alternativ ueber NEOS_FUSION_LS_MAIN gesetzt werden.
+ * The server path can alternatively be set through NEOS_FUSION_LS_MAIN.
  */
 
 const path = require('path')
@@ -43,7 +44,7 @@ function writeErr(args) {
   try {
     process.stderr.write(line + '\n')
   } catch (error) {
-    // stderr kann geschlossen sein — Logging darf den Server nie beenden.
+    // stderr may be closed — logging must never terminate the server.
   }
 }
 
@@ -56,16 +57,16 @@ const serverMain = process.env.NEOS_FUSION_LS_MAIN || positional[0]
 
 if (!serverMain) {
   process.stderr.write(
-    'neos-fusion-ls-stdio: kein Server-Pfad angegeben.\n' +
-      'Aufruf: node neos-fusion-ls-stdio.js <pfad/zu/out/main.js> --stdio\n'
+    'neos-fusion-ls-stdio: no server path given.\n' +
+      'Usage: node neos-fusion-ls-stdio.js <path/to/out/main.js> --stdio\n'
   )
   process.exit(2)
 }
 
 const resolved = path.resolve(serverMain)
 
-// `vscode-languageserver` liest den Transport aus process.argv. Sicherstellen,
-// dass `--stdio` gesetzt ist, auch wenn der Aufrufer es vergessen hat.
+// `vscode-languageserver` reads the transport from process.argv. Make sure
+// `--stdio` is set, even when the caller forgot it.
 if (!process.argv.includes('--stdio')) {
   process.argv.push('--stdio')
 }
@@ -74,7 +75,7 @@ try {
   require(resolved)
 } catch (error) {
   process.stderr.write(
-    'neos-fusion-ls-stdio: Server konnte nicht geladen werden: ' + resolved + '\n' + (error && error.stack) + '\n'
+    'neos-fusion-ls-stdio: could not load the server: ' + resolved + '\n' + (error && error.stack) + '\n'
   )
   process.exit(1)
 }

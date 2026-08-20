@@ -1,60 +1,58 @@
-*neos-fusion.txt*   Neos CMS, Neos.Fusion und AFX fuer Neovim      *neos-fusion*
+*neos-fusion.txt*  Neos CMS, Neos.Fusion and AFX for Neovim  *neos-fusion*
 
-                       neos-fusion.nvim — Handbuch
+                       neos-fusion.nvim — manual
 
 ==============================================================================
-INHALT                                                 *neos-fusion-contents*
+CONTENTS                                               *neos-fusion-contents*
 
-    1. Einfuehrung ................................ |neos-fusion-intro|
-    2. Voraussetzungen ............................ |neos-fusion-requirements|
+    1. Introduction ............................... |neos-fusion-intro|
+    2. Requirements ............................... |neos-fusion-requirements|
     3. Installation ............................... |neos-fusion-installation|
     4. Setup ...................................... |neos-fusion-setup|
-    5. Optionen ................................... |neos-fusion-options|
-    6. Kommandos .................................. |neos-fusion-commands|
-    7. Language Server ............................ |neos-fusion-lsp|
-    8. Root-Erkennung ............................. |neos-fusion-root|
-    9. Syntax und Tree-sitter ..................... |neos-fusion-syntax|
+    5. Options .................................... |neos-fusion-options|
+    6. Commands ................................... |neos-fusion-commands|
+    7. Language server ............................ |neos-fusion-lsp|
+    8. Root detection ............................. |neos-fusion-root|
+    9. Syntax and Tree-sitter ..................... |neos-fusion-syntax|
    10. Snippets ................................... |neos-fusion-snippets|
-   11. Lua-API .................................... |neos-fusion-api|
-   12. Troubleshooting ............................ |neos-fusion-troubleshooting|
-   13. Lizenz ..................................... |neos-fusion-license|
+   11. Lua API .................................... |neos-fusion-api|
+   12. Troubleshooting ......................... |neos-fusion-troubleshooting|
+   13. License .................................... |neos-fusion-license|
 
 ==============================================================================
-1. EINFUEHRUNG                                            *neos-fusion-intro*
+1. INTRODUCTION                                           *neos-fusion-intro*
 
-neos-fusion.nvim bringt Neovim die Unterstuetzung fuer Neos CMS, Neos.Fusion
-und AFX:
+neos-fusion.nvim brings support for Neos CMS, Neos.Fusion and AFX to Neovim:
 
-    - Dateityperkennung fuer `.fusion`
-    - Syntax-Highlighting ueber Tree-sitter, mit Vim-Syntax als Fallback
-    - Blockeinrueckung fuer Fusion und AFX
-    - Kommentar- und Einrueckungsoptionen
-    - Snippets fuer haeufige Fusion-Prototypen
-    - Anbindung des Language Servers `neos-fusion-ls`
+    - filetype detection for `.fusion`
+    - syntax highlighting through Tree-sitter, with Vim syntax as a fallback
+    - block indentation for Fusion and AFX
+    - comment and indentation options
+    - snippets for common Fusion prototypes
+    - integration of the `neos-fusion-ls` language server
 
-Das Plugin laesst sich ohne |neos-fusion-setup| laden; es gelten dann die
-Defaults.
+The plugin can be loaded without |neos-fusion-setup|; the defaults then apply.
 
 ==============================================================================
-2. VORAUSSETZUNGEN                                 *neos-fusion-requirements*
+2. REQUIREMENTS                                    *neos-fusion-requirements*
 
-    Neovim         0.10 oder neuer (getestet mit 0.12)
-    Node.js        fuer den Language Server
-    npm            nur fuer :NeosFusionInstallServer
+    Neovim         0.10 or newer (tested with 0.12)
+    Node.js        for the language server
+    npm            only for :NeosFusionInstallServer
 
 Optional:
 
-    nvim-treesitter        Parser `fusion` (:TSInstall fusion)
-    LuaSnip                Snippets, automatisch
-    blink.cmp              Snippets, per search_paths-Eintrag
-    blink.cmp / nvim-cmp   Completion-Capabilities (automatisch erkannt)
+    nvim-treesitter        parser `fusion` (:TSInstall fusion)
+    LuaSnip                snippets, automatic
+    blink.cmp              snippets, through a search_paths entry
+    blink.cmp / nvim-cmp   completion capabilities (detected automatically)
 
-nvim-lspconfig wird NICHT benoetigt.
+nvim-lspconfig is NOT required.
 
 ==============================================================================
 3. INSTALLATION                                    *neos-fusion-installation*
 
-Mit lazy.nvim, lokales Verzeichnis: >lua
+With lazy.nvim, local directory: >lua
 
     {
       dir = "~/src/neos-fusion.nvim",
@@ -67,18 +65,18 @@ Mit lazy.nvim, lokales Verzeichnis: >lua
       opts = {},
     }
 <
-Aus einem GitHub-Repository: >lua
+From a GitHub repository: >lua
 
     { "<owner>/neos-fusion.nvim", ft = { "fusion" }, opts = {} }
 <
-Beide Dependencies sind optional. Wer die Kommandos auch ohne offene
-Fusion-Datei braucht, ergaenzt `cmd = { "NeosFusionInstallServer" }`.
+Both dependencies are optional. If you need the commands without an open
+Fusion file, add `cmd = { "NeosFusionInstallServer" }`.
 
-Anschliessend einmalig: >vim
+Then, once: >vim
 
     :NeosFusionInstallServer
 <
-Es wird nie automatisch etwas heruntergeladen.
+Nothing is ever downloaded automatically.
 
 ==============================================================================
 4. SETUP                                                  *neos-fusion-setup*
@@ -86,315 +84,314 @@ Es wird nie automatisch etwas heruntergeladen.
                                                       *neos_fusion.setup()*
 require("neos_fusion").setup({opts})
 
-Registriert Dateityperkennung, Autocommands und Snippets. `setup({})` genuegt
-fuer den Normalfall.
+Registers filetype detection, autocommands and snippets. `setup({})` is
+enough for the common case.
 
 ==============================================================================
-5. OPTIONEN                                             *neos-fusion-options*
+5. OPTIONS                                              *neos-fusion-options*
 
 filetypes.fusion                              *neos-fusion-opt-filetypes*
-        boolean, Default `true`
-        `.fusion` als Filetype `fusion` erkennen.
+        boolean, default `true`
+        Detect `.fusion` as filetype `fusion`.
 
 filetypes.afx
-        boolean, Default `false`
-        `.afx` ebenfalls als `fusion` erkennen. In Neos unueblich: AFX ist
-        eine DSL innerhalb von Fusion, keine eigene Dateiendung.
+        boolean, default `false`
+        Detect `.afx` as `fusion` too. Uncommon in Neos: AFX is a DSL inside
+        Fusion, not a file extension of its own.
 
 syntax                                            *neos-fusion-opt-syntax*
-        boolean, Default `true`
-        Mitgelieferte Vim-Syntax laden. Tree-sitter hat trotzdem Vorrang,
-        sobald es fuer den Buffer laeuft. Mit `false` greift ausschliesslich
-        Tree-sitter.
+        boolean, default `true`
+        Load the bundled Vim syntax. Tree-sitter still takes precedence as
+        soon as it runs for the buffer. With `false` only Tree-sitter applies.
 
 treesitter.enable                             *neos-fusion-opt-treesitter*
-        boolean, Default `true`
-        Ruft |vim.treesitter.start()| auf, falls der Parser `fusion`
-        vorhanden ist.
+        boolean, default `true`
+        Calls |vim.treesitter.start()| if the parser `fusion` is available.
 
 treesitter.notify_missing
-        boolean, Default `false`
-        Einmalig warnen, wenn der Parser fehlt.
+        boolean, default `false`
+        Warn once when the parser is missing.
 
 editor.commentstring                              *neos-fusion-opt-editor*
-        string, Default `"// %s"`
+        string, default `"// %s"`
         Alternative: `"# %s"`.
 
 editor.indent, editor.shiftwidth, editor.expandtab
-        boolean / number / boolean, Defaults `true`, `4`, `true`
+        boolean / number / boolean, defaults `true`, `4`, `true`
 
 snippets.luasnip                                *neos-fusion-opt-snippets*
-        "auto" | boolean, Default `"auto"`
-        Registrierung bei LuaSnip bzw. blink.cmp. Mit `true` wird gewarnt,
-        wenn keine Engine gefunden wird. Der Schluesselname ist historisch.
+        "auto" | boolean, default `"auto"`
+        Registration with LuaSnip or blink.cmp. With `true` a warning is
+        emitted when no engine is found. The key name is historical.
 
 server.enable                                     *neos-fusion-opt-server*
-        boolean, Default `true`
+        boolean, default `true`
 
 server.autostart
-        boolean, Default `true`
-        Beim FileType `fusion` automatisch starten.
+        boolean, default `true`
+        Start automatically on filetype `fusion`.
 
 server.cmd
-        string[] | nil, Default `nil`
-        Explizites Startkommando. Hat Vorrang vor jeder Autoerkennung: >lua
-            cmd = { "node", "/pfad/out/main.js", "--stdio" }
+        string[] | nil, default `nil`
+        Explicit start command. Takes precedence over all auto-detection: >lua
+            cmd = { "node", "/path/out/main.js", "--stdio" }
 <
 server.node, server.npm
-        string, Defaults `"node"`, `"npm"`
+        string, defaults `"node"`, `"npm"`
 
 server.version
-        string, Default `"0.3.16"`
-        Wird von :NeosFusionInstallServer als `neos-fusion-ls@<version>`
-        installiert.
+        string, default `"0.3.16"`
+        Installed by :NeosFusionInstallServer as `neos-fusion-ls@<version>`.
 
 server.install_dir
-        string | nil, Default `nil`
-        Ohne Angabe: `stdpath("data")/neos-fusion.nvim/server`.
+        string | nil, default `nil`
+        Without a value: `stdpath("data")/neos-fusion.nvim/server`.
 
 server.prefer_local
-        boolean, Default `true`
-        `<root>/node_modules/neos-fusion-ls/out/main.js` bevorzugen.
+        boolean, default `true`
+        Prefer `<root>/node_modules/neos-fusion-ls/out/main.js`.
 
 server.sanitize_stdout
-        boolean, Default `true`
-        Server ueber `bin/neos-fusion-ls-stdio.js` starten. Siehe
+        boolean, default `true`
+        Start the server through `bin/neos-fusion-ls-stdio.js`. See
         |neos-fusion-lsp|.
 
 server.root_markers, server.root_fallback_markers, server.root_outermost,
 server.root_fallback_to_file_dir
-        Siehe |neos-fusion-root|. `.git` steht in
-        `root_fallback_markers`, nicht in `root_markers`.
+        See |neos-fusion-root|. `.git` is in `root_fallback_markers`, not in
+        `root_markers`.
 
 server.resolve_package_folders
-        boolean, Default `true`
-        Relative Eintraege in `folders.packages` gegen die Projektwurzel
-        absolut aufloesen.
+        boolean, default `true`
+        Resolve relative entries in `folders.packages` to absolute paths
+        against the project root.
 
 server.watch_files, server.watch_patterns
-        boolean / string[], Defaults `true` /
+        boolean / string[], defaults `true` /
         `{ "*.fusion", "*.php", "*.yaml", "*.yml", "*.xlf" }`
 
 server.progress.handle, server.progress.notify
-        boolean, Defaults `true`, `false`
-        Handler fuer die `custom/…`-Notifications des Servers.
+        boolean, defaults `true`, `false`
+        Handlers for the server's `custom/…` notifications.
 
 server.on_attach, server.capabilities
         function | nil, table | nil
 
 server.init_options
-        table, Default `{ textDocumentSync = { openClose = true } }`
-        MUSS gesetzt bleiben — ohne diesen Wert schlaegt `initialize`
-        serverseitig fehl.
+        table, default `{ textDocumentSync = { openClose = true } }`
+        MUST stay set — without this value `initialize` fails on the server
+        side.
 
 server.settings.neosFusionLsp                   *neos-fusion-opt-settings*
         table
-        Konfiguration des Servers, vollstaendig vorbelegt. Wichtige Zweige:
+        Configuration of the server, fully pre-populated. Important branches:
 
-            folders.packages          Suchpfade fuer Packages
-            folders.fusion            Fusion-Ordner innerhalb eines Packages
-            folders.ignore            auszulassende Ordner
+            folders.packages          search paths for packages
+            folders.fusion            Fusion folders inside a package
+            folders.ignore            folders to skip
             logging.level             error|info|verbose|debug
-            diagnostics.enabled       Diagnosen an/aus
-            diagnostics.enabledDiagnostics   14 Einzelschalter
-            diagnostics.ignore.folders       Default { "Packages/" }
+            diagnostics.enabled       diagnostics on/off
+            diagnostics.enabledDiagnostics   14 individual switches
+            diagnostics.ignore.folders       default { "Packages/" }
             inlayHint.depth           disabled|literal|always
 
-        Die vollstaendige Liste steht in `lua/neos_fusion/config.lua` und in
+        The complete list is in `lua/neos_fusion/config.lua` and in
         `docs/ANALYSE.md`.
 
 ==============================================================================
-6. KOMMANDOS                                           *neos-fusion-commands*
+6. COMMANDS                                            *neos-fusion-commands*
 
                                               *:NeosFusionInstallServer*
 :NeosFusionInstallServer [{version}]
-        Installiert `neos-fusion-ls` per npm nach `server.install_dir`.
+        Installs `neos-fusion-ls` through npm into `server.install_dir`.
 
                                                *:NeosFusionUpdateServer*
 :NeosFusionUpdateServer [{version}]
-        Installiert die angegebene bzw. konfigurierte Version darueber.
+        Installs the given or configured version on top.
 
                                                  *:NeosFusionServerInfo*
 :NeosFusionServerInfo
-        Zeigt Paket, Version, Installationsordner, aufgeloestes Kommando und
-        laufende Clients.
+        Shows package, version, installation directory, resolved command and
+        running clients.
 
                                                      *:NeosFusionStart*
                                                       *:NeosFusionStop*
                                                    *:NeosFusionRestart*
 :NeosFusionStart / :NeosFusionStop / :NeosFusionRestart
-        Client fuer den aktuellen Buffer starten, alle stoppen, neu starten.
+        Start the client for the current buffer, stop all, restart.
 
                                             *:NeosFusionReloadWorkspace*
 :NeosFusionReloadWorkspace
-        Sendet `workspace/didChangeConfiguration` erneut. Der Server baut
-        daraufhin alle Fusion-Workspaces neu auf.
+        Sends `workspace/didChangeConfiguration` again. The server then
+        rebuilds all Fusion workspaces.
 
                                                *:NeosFusionSetLogLevel*
 :NeosFusionSetLogLevel {level}
-        `error`, `info`, `verbose` oder `debug`. Loest ebenfalls einen
-        Workspace-Reload aus.
+        `error`, `info`, `verbose` or `debug`. Also triggers a workspace
+        reload.
 
                                                     *:NeosFusionDoctor*
 :NeosFusionDoctor
-        Diagnose fuer den aktuellen Buffer in einem Scratch-Buffer. Zeigt,
-        welche `folders.packages` tatsaechlich existieren, welche
-        Verzeichnisse die Projektwurzel enthaelt, ob die Datei in einem
-        `folders.fusion` liegt, wie viele Prototypen der Server insgesamt
-        indexiert hat (`workspace/symbol`-Probe) und ob er die offene Datei
-        kennt (`documentSymbol`-Probe).
+        Diagnostics for the current buffer in a scratch buffer. Shows which
+        `folders.packages` actually exist, which directories the project root
+        contains, whether the file lies inside a `folders.fusion`, how many
+        prototypes the server has indexed in total (`workspace/symbol`
+        probe) and whether it knows the open file (`documentSymbol` probe).
 
-        Trennt damit die drei Ursachen fuer "Hover/Definition liefert
-        nichts":
-            1. kein konfigurierter Package-Ordner existiert
-            2. die Datei liegt ausserhalb der Fusion-Ordner
-            3. der Cursor steht auf keinem unterstuetzten Ziel
+        That separates the three causes of "hover/definition returns
+        nothing":
+            1. no configured package folder exists
+            2. the file lies outside the Fusion folders
+            3. the cursor is not on a supported target
 
                                                        *:NeosFusionLog*
 :NeosFusionLog
-        Oeffnet |vim.lsp.get_log_path()| in einem neuen Tab.
+        Opens |vim.lsp.get_log_path()| in a new tab.
 
 :checkhealth neos_fusion                          *neos-fusion-checkhealth*
-        Prueft Neovim-Version, Node/npm, Serverinstallation, Startkommando,
-        Wrapper, Projektwurzel, Tree-sitter-Parser und LuaSnip.
+        Checks the Neovim version, Node/npm, the server installation, the
+        start command, the wrapper, the project root, the Tree-sitter parser
+        and the snippet engine.
 
 ==============================================================================
 7. LANGUAGE SERVER                                          *neos-fusion-lsp*
 
-Verwendet wird `neos-fusion-ls` (AGPL-3.0-or-later, Simon J. Schmidt), der
-Server hinter der VSCode-Extension „Neos Fusion & AFX Language Server“. Er
-wird nicht mitgeliefert, sondern zur Laufzeit ueber npm bezogen.
+The server used is `neos-fusion-ls` (AGPL-3.0-or-later, Simon J. Schmidt),
+the server behind the VSCode extension "Neos Fusion & AFX Language Server".
+It is not bundled but fetched at runtime through npm.
 
-Unterstuetzte Faehigkeiten (aus der `initialize`-Antwort):
+Supported capabilities (from the `initialize` response):
 
-    Hover, Goto Definition, Find References, Document Symbols,
-    Workspace Symbols, Completion, Code Actions, CodeLens, Rename
-    (mit Prepare), Signature Help, Inlay Hints, Semantic Tokens,
-    Diagnostics
+    hover, goto definition, find references, document symbols,
+    workspace symbols, completion, code actions, CodeLens, rename
+    (with prepare), signature help, inlay hints, semantic tokens,
+    diagnostics
 
-Aufloesung des Startkommandos, in dieser Reihenfolge:
+Resolution of the start command, in this order:
 
     1. `server.cmd`
-    2. `<root>/node_modules/neos-fusion-ls/out/main.js` (wenn prefer_local)
-    3. Vom Plugin installierte Kopie in `server.install_dir`
-    4. Global installierte Kopie ueber $PATH
+    2. `<root>/node_modules/neos-fusion-ls/out/main.js` (if prefer_local)
+    3. the copy installed by the plugin in `server.install_dir`
+    4. a globally installed copy through $PATH
 
-Der Bin-Eintrag des npm-Pakets ist unbrauchbar: `out/main.js` hat weder
-Shebang noch Ausfuehrungsbit. Das Plugin ruft deshalb immer
-`node <pfad>/out/main.js --stdio` auf.
+The bin entry of the npm package is unusable: `out/main.js` has neither a
+shebang nor an executable bit. The plugin therefore always calls
+`node <path>/out/main.js --stdio`.
 
                                                    *neos-fusion-wrapper*
-Der Server protokolliert ueber `console.log()` auf stdout, also in denselben
-Stream wie das LSP-Framing. In VSCode faellt das nicht auf, weil dort IPC
-statt stdio verwendet wird. Neovim 0.12 toleriert die Zeilen zwar, aber die
-Serverlogs gehen dabei verloren.
+The server logs through `console.log()` to stdout, i.e. into the same stream
+as the LSP framing. This goes unnoticed in VSCode, which uses IPC instead of
+stdio. Neovim 0.12 does tolerate those lines, but the server logs are lost in
+the process.
 
-Deshalb startet das Plugin den Server per Default ueber
-`bin/neos-fusion-ls-stdio.js`. Der Wrapper laedt den Server im selben Prozess
-und leitet `console.*` vorher nach stderr um: stdout bleibt strikt
-LSP-konform, die Logs erscheinen in |:NeosFusionLog|. Abschaltbar mit
-`server.sanitize_stdout = false`.
+That is why the plugin starts the server through
+`bin/neos-fusion-ls-stdio.js` by default. The wrapper loads the server in the
+same process and redirects `console.*` to stderr beforehand: stdout stays
+strictly LSP-conformant and the logs show up in |:NeosFusionLog|. Can be
+turned off with `server.sanitize_stdout = false`.
 
                                                 *neos-fusion-lsp-quirks*
-Weitere Eigenheiten, die das Plugin abfaengt:
+Further quirks the plugin takes care of:
 
-    - `initializationOptions.textDocumentSync.openClose` ist Pflicht.
-    - Workspaces entstehen nur aus `workspaceFolders`.
-    - Initialisiert wird erst bei `workspace/didChangeConfiguration`; die
-      Settings muessen daher vollstaendig sein.
-    - `folders.packages` wird gegen das Arbeitsverzeichnis des Prozesses
-      geprueft; das Plugin setzt `cmd_cwd` und loest die Pfade absolut auf.
-    - Der Server registriert keine Datei-Watcher; das Plugin meldet
-      Schreibvorgaenge selbst.
+    - `initializationOptions.textDocumentSync.openClose` is mandatory.
+    - Workspaces are only created from `workspaceFolders`.
+    - Initialization happens on `workspace/didChangeConfiguration`; the
+      settings therefore have to be complete.
+    - `folders.packages` is checked against the working directory of the
+      process; the plugin sets `cmd_cwd` and resolves the paths to absolute
+      ones.
+    - The server registers no file watchers; the plugin reports writes
+      itself.
 
-Belege dazu in `docs/ANALYSE.md`.
+Evidence for all of this in `docs/ANALYSE.md`.
 
 ==============================================================================
-8. ROOT-ERKENNUNG                                          *neos-fusion-root*
+8. ROOT DETECTION                                          *neos-fusion-root*
 
-Zweistufig, aufwaerts ab der geoeffneten Datei.
+Two-tier, walking upwards from the opened file.
 
-Stufe 1, starke Marker (`server.root_markers`):
+Tier 1, strong markers (`server.root_markers`):
 
     flow, flow.bat, composer.json, DistributionPackages, Packages,
     Configuration/Settings.yaml
 
-Stufe 2, schwache Marker (`server.root_fallback_markers`), nur wenn Stufe 1
-leer bleibt:
+Tier 2, weak markers (`server.root_fallback_markers`), only when tier 1 stays
+empty:
 
     .git
 
-Eine `composer.json` zaehlt nur, wenn sie `neos/neos`, `neos/flow`,
-`neos/fusion` oder `typo3/flow` erwaehnt. Damit wird die composer.json eines
-einzelnen Packages nicht zur Projektwurzel.
+A `composer.json` only counts if it mentions `neos/neos`, `neos/flow`,
+`neos/fusion` or `typo3/flow`. That keeps the composer.json of a single
+package from becoming the project root.
 
-Innerhalb einer Stufe gewinnt per Default der aeusserste Kandidat
-(`server.root_outermost`). Ohne jeden Treffer wird das Verzeichnis der Datei
-verwendet (`server.root_fallback_to_file_dir`).
+Within a tier the outermost candidate wins by default
+(`server.root_outermost`). Without any match the directory of the file is used
+(`server.root_fallback_to_file_dir`).
 
-Warum zwei Stufen: bei Monorepos liegt das Neos-Projekt oft in einem
-Unterordner (z.B. `repo/app/`), `.git` aber im Repo-Wurzelverzeichnis. Eine
-einstufige Liste zusammen mit `root_outermost` waehlt dann `repo/`; dort
-existiert keiner der `folders.packages`, der Server indexiert nichts, Hover
-und Goto Definition bleiben leer. Prueflauf: |:NeosFusionDoctor|.
+Why two tiers: in monorepos the Neos project often lives in a subdirectory
+(e.g. `repo/app/`) while `.git` sits at the repository root. A single-tier
+list combined with `root_outermost` would then pick `repo/`; none of the
+`folders.packages` exist there, the server indexes nothing, hover and goto
+definition stay empty. Verify with |:NeosFusionDoctor|.
 
 ==============================================================================
-9. SYNTAX UND TREE-SITTER                                *neos-fusion-syntax*
+9. SYNTAX AND TREE-SITTER                                *neos-fusion-syntax*
 
-Standardweg ist die mitgelieferte `syntax/fusion.vim`.
+The default path is the bundled `syntax/fusion.vim`.
 
-Die Grammatik `jirgn/tree-sitter-fusion` (MIT, Stand 2021) existiert, wird von
-nvim-treesitter aber nur noch auf dem alten Branch `master` gefuehrt. Auf dem
-aktuellen Branch `main` (u.a. LazyVim) ist sie entfernt; `:TSInstall fusion`
-meldet dort `skipping unsupported language: fusion`. Das ist erwartet.
+The grammar `jirgn/tree-sitter-fusion` (MIT, as of 2021) exists, but
+nvim-treesitter only carries it on the old branch `master`. On the current
+branch `main` (used by LazyVim among others) it has been removed;
+`:TSInstall fusion` reports `skipping unsupported language: fusion` there.
+That is expected.
 
-Mit nvim-treesitter auf `master` greift das Plugin automatisch auf den Parser
-zu (`treesitter.enable`) und nutzt die dortigen Queries. Eigene
-Fusion-Queries liefert das Plugin nicht.
+With nvim-treesitter on `master` the plugin picks up the parser automatically
+(`treesitter.enable`) and uses the queries shipped there. The plugin provides
+no Fusion queries of its own.
 
-Gemessene Grenze der Grammatik: AFX-Kommentare `{/* … */}` erzeugen einen
-Parserfehler. Die Vim-Syntax deckt sie ab.
+Measured limit of the grammar: AFX comments `{/* … */}` produce a parser
+error. The Vim syntax covers them.
 
-Mitgeliefert wird lediglich `after/queries/php/injections.scm` (additiv ueber
-`;; extends`, immer aktiv): Fusion in PHP-Heredocs mit dem Bezeichner FUSION
-oder AFX. Die Regel ist bewusst eng und kein belegtes Neos-Muster.
+The only query file shipped is `after/queries/php/injections.scm` (additive
+through `;; extends`, always active): Fusion inside PHP heredocs with the
+identifier FUSION or AFX. The rule is deliberately narrow and not an
+established Neos pattern.
 
-`syntax/fusion.vim` deckt Prototypen, Pfade, Operatoren,
-Meta-Eigenschaften, Eel-Ausdruecken, AFX-Tags und Attributen, Strings, Zahlen,
-Booleans, `null` sowie `//`-, `#`- und `/* */`-Kommentaren. Strings, Eel und
-AFX sind Regionen, damit Kommentarmuster nicht in Literale hineinlaufen.
+`syntax/fusion.vim` covers prototypes, paths, operators, meta properties, Eel
+expressions, AFX tags and attributes, strings, numbers, booleans, `null` as
+well as `//`, `#` and `/* */` comments. Strings, Eel and AFX are regions so
+that comment patterns do not bleed into literals.
 
-Einrueckung: `indent/fusion.vim` behandelt `{}`-Bloecke, AFX-Tags,
-mehrzeilige Tags und `afx\``.
+Indentation: `indent/fusion.vim` handles `{}` blocks, AFX tags, multi-line
+tags and `afx\``.
 
                                               *neos-fusion-textobjects*
-Das Plugin liefert keine eigenen Textobjects. Ohne Tree-sitter waeren sie fuer
-Prototypen-Bloecke und AFX-Elemente zu fragil; mit Parser empfiehlt sich
-`nvim-treesitter-textobjects`.
+The plugin provides no textobjects of its own. Without Tree-sitter they would
+be too fragile for prototype blocks and AFX elements; with a parser,
+`nvim-treesitter-textobjects` is the better choice.
 
 ==============================================================================
 10. SNIPPETS                                            *neos-fusion-snippets*
 
-`snippets/fusion.json` im VSCode-Format. Prefixes u.a.:
+`snippets/fusion.json` in VSCode format. Prefixes include:
 
     component, contentcomponent, prototype, extend, renderer, eel,
     join, loop, map, datastructure, case, tag, value,
     @if, @process, @context, @apply, resource, translate,
     ignore, ignoreblock
 
-Mit LuaSnip erfolgt die Registrierung automatisch. Manuell: >lua
+With LuaSnip the registration happens automatically. Manually: >lua
 
     require("luasnip.loaders.from_vscode").lazy_load({
       paths = { require("neos_fusion.snippets").snippets_dir() },
     })
 <
                                                 *neos-fusion-snippets-blink*
-blink.cmp muss dagegen konfiguriert werden. Es durchsucht den runtimepath
-NICHT, sondern nur `stdpath("config")/snippets` und runtimepath-Eintraege,
-deren Pfad auf `friendly.snippets` passt. Das Plugin kann das nicht
-nachtraeglich richten, weil blink die Snippet-Registry einmalig beim Setup
-baut — also bevor ein `ft`-lazy geladenes Plugin existiert. In die
-blink-Spec aufnehmen: >lua
+blink.cmp, on the other hand, has to be configured. It does NOT search the
+runtimepath, only `stdpath("config")/snippets` and runtimepath entries whose
+path matches `friendly.snippets`. The plugin cannot fix that after the fact,
+because blink builds its snippet registry once at setup time — before an
+`ft`-lazy plugin exists. Add this to the blink spec: >lua
 
     {
       "saghen/blink.cmp",
@@ -414,80 +411,80 @@ blink-Spec aufnehmen: >lua
       end,
     }
 <
-Danach Neovim neu starten; `:Lazy reload` genuegt nicht.
-|neos-fusion-checkhealth| bestaetigt den Eintrag und zeigt andernfalls die
-tatsaechlich gesetzten Suchpfade.
+Then restart Neovim; `:Lazy reload` is not enough.
+|neos-fusion-checkhealth| confirms the entry and otherwise shows the search
+paths that are actually set.
 ==============================================================================
-11. LUA-API                                                 *neos-fusion-api*
+11. LUA API                                                 *neos-fusion-api*
 
-require("neos_fusion").setup({opts})   siehe |neos-fusion-setup|
-require("neos_fusion").config()        aktive Konfiguration
-require("neos_fusion").start()         Client fuer den aktuellen Buffer
+require("neos_fusion").setup({opts})   see |neos-fusion-setup|
+require("neos_fusion").config()        active configuration
+require("neos_fusion").start()         client for the current buffer
 require("neos_fusion").stop()
 require("neos_fusion").restart()
 require("neos_fusion").install_server({version})
 
-require("neos_fusion.lsp").find_root({path})     Projektwurzel ermitteln
-require("neos_fusion.lsp").resolve_cmd({root})   Startkommando + Quelle
-require("neos_fusion.lsp").client_config({root}) vollstaendige Client-Konfig
-require("neos_fusion.lsp").status()              laufende Clients
-require("neos_fusion.lsp").doctor({bufnr})       Diagnosebericht als String
+require("neos_fusion.lsp").find_root({path})     determine the project root
+require("neos_fusion.lsp").resolve_cmd({root})   start command + source
+require("neos_fusion.lsp").client_config({root}) full client configuration
+require("neos_fusion.lsp").status()              running clients
+require("neos_fusion.lsp").doctor({bufnr})       diagnostic report as string
 require("neos_fusion.installer").is_installed()
 require("neos_fusion.installer").installed_version()
 require("neos_fusion.snippets").snippets_dir()
 require("neos_fusion.snippets").engine()         "luasnip"|"blink"|nil
 require("neos_fusion.snippets").blink_search_paths()
 require("neos_fusion.snippets").in_blink_search_paths()
-require("neos_fusion.snippets").blink_hint()     fertiger Spec-Ausschnitt
+require("neos_fusion.snippets").blink_hint()     ready-made spec excerpt
 
 ==============================================================================
 12. TROUBLESHOOTING                              *neos-fusion-troubleshooting*
 
-Zuerst immer: >vim
+Always first: >vim
 
-    :checkhealth neos_fusion    " Installation
-    :NeosFusionDoctor           " konkretes Projekt
+    :checkhealth neos_fusion    " installation
+    :NeosFusionDoctor           " a specific project
 <
-Der Server antwortet nur auf Prototypnamen, Fusion-Properties, Eel-Helper,
-Resource-URIs und Controller/Action-Angaben. `K` mit "no information
-available" auf einem Stringliteral ist daher normal.
-Kein Server gefunden~
-    :NeosFusionInstallServer, oder `server.cmd` explizit setzen.
+The server only answers for prototype names, Fusion properties, Eel helpers,
+resource URIs and controller/action references. So `K` showing "no
+information available" on a string literal is normal.
+No server found~
+    :NeosFusionInstallServer, or set `server.cmd` explicitly.
 
-Server laeuft, liefert aber nichts~
-    Falsche Projektwurzel. :NeosFusionServerInfo zeigt `root`. Der Server
-    meldet zusaetzlich „No Packages found“ oder „composer.json not found“.
-    Dann `settings.neosFusionLsp.folders.packages` anpassen.
+Server runs but returns nothing~
+    Wrong project root. :NeosFusionServerInfo shows `root`. The server also
+    reports "No Packages found" or "composer.json not found". Then adjust
+    `settings.neosFusionLsp.folders.packages`.
 
-Keine Diagnostics in Packages/~
-    Beabsichtigt: `diagnostics.ignore.folders` steht auf `{ "Packages/" }`.
-    Mit `diagnostics.alwaysDiagnoseChangedFile = true` werden geaenderte
-    Dateien trotzdem geprueft.
+No diagnostics in Packages/~
+    Intended: `diagnostics.ignore.folders` is set to `{ "Packages/" }`. With
+    `diagnostics.alwaysDiagnoseChangedFile = true` changed files are checked
+    anyway.
 
-Aenderungen an YAML/PHP wirken nicht~
-    Das Plugin meldet nur BufWritePost. Bei Aenderungen ausserhalb von
-    Neovim: :NeosFusionReloadWorkspace
+Changes to YAML/PHP have no effect~
+    The plugin only reports BufWritePost. For changes made outside Neovim:
+    :NeosFusionReloadWorkspace
 
-Leeres Log~
-    :NeosFusionSetLogLevel debug, dann :NeosFusionLog. Serverlogs erscheinen
-    nur mit `server.sanitize_stdout = true`.
+Empty log~
+    :NeosFusionSetLogLevel debug, then :NeosFusionLog. Server logs only show
+    up with `server.sanitize_stdout = true`.
 
-permission denied bei node_modules/.bin/neos-fusion-ls~
-    Erwartet — die Datei hat keinen Shebang. Das Plugin ruft immer
-    `node …/out/main.js --stdio` auf.
+permission denied on node_modules/.bin/neos-fusion-ls~
+    Expected — the file has no shebang. The plugin always calls
+    `node …/out/main.js --stdio`.
 
-Highlighting bricht ab~
-    :syntax sync fromstart, oder Tree-sitter installieren.
+Highlighting breaks off~
+    :syntax sync fromstart, or install Tree-sitter.
 
 ==============================================================================
-13. LIZENZ                                              *neos-fusion-license*
+13. LICENSE                                             *neos-fusion-license*
 
-neos-fusion.nvim steht unter der MIT-Lizenz.
+neos-fusion.nvim is licensed under the MIT license.
 
-Es enthaelt keinen Quellcode aus den Referenzprojekten. Der Language Server
-`neos-fusion-ls` (AGPL-3.0-or-later) wird nicht mitgeliefert, sondern zur
-Laufzeit ueber npm bezogen und als separater Prozess gestartet.
+It contains no source code from the reference projects. The language server
+`neos-fusion-ls` (AGPL-3.0-or-later) is not bundled but fetched at runtime
+through npm and started as a separate process.
 
-Referenzen und Belege: `docs/ANALYSE.md`.
+References and evidence: `docs/ANALYSE.md`.
 
 vim:tw=78:ts=8:noet:ft=help:norl:

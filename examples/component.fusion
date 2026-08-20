@@ -1,6 +1,6 @@
-# Beispiel: einfacher Presentational-Component-Prototyp
+# Example: a simple presentational component prototype
 #
-# Zeigt: Prototypdefinition, Vererbung, Default-Eigenschaften, Eel und AFX.
+# Shows: prototype definition, inheritance, default properties, Eel and AFX.
 
 prototype(Vendor.Site:Component.Teaser) < prototype(Neos.Fusion:Component) {
     title = ''
@@ -8,18 +8,18 @@ prototype(Vendor.Site:Component.Teaser) < prototype(Neos.Fusion:Component) {
     link = null
     imageUri = null
 
-    # Eel-Ausdruck mit Helper-Aufruf
+    # Eel expression with a helper call
     hasLink = ${String.length(props.link) > 0}
 
-    // Doppelter Slash und Raute funktionieren beide als Kommentar.
-    /* Blockkommentare ebenfalls. */
+    // Both a double slash and a hash work as a comment.
+    /* Block comments too. */
 
     renderer = afx`
         <article class="teaser">
             <img @if.hasImage={props.imageUri} src={props.imageUri} alt={props.title} />
             <h2 class="teaser__title">{props.title}</h2>
             <p>{props.text}</p>
-            <a @if.hasLink={props.hasLink} href={props.link}>Mehr erfahren</a>
+            <a @if.hasLink={props.hasLink} href={props.link}>Read more</a>
         </article>
     `
 }

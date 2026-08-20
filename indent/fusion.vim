@@ -1,10 +1,10 @@
 " Vim indent file
-" Language:  Neos.Fusion (inkl. AFX)
+" Language:  Neos.Fusion (incl. AFX)
 " License:   MIT
 "
-" Blockeinrueckung anhand von `{`/`}` sowie AFX-Tags. Bewusst einfach
-" gehalten: Tree-sitter liefert (falls installiert) die genauere Einrueckung
-" ueber `indents.scm`; diese Datei ist der Fallback.
+" Block indentation based on `{`/`}` and AFX tags. Deliberately kept simple:
+" Tree-sitter provides the more precise indentation through `indents.scm` (if
+" installed); this file is the fallback.
 
 if exists('b:did_indent')
   finish
@@ -22,8 +22,8 @@ if exists('*GetFusionIndent')
   finish
 endif
 
-" Zeile ohne Kommentare und ohne Stringinhalte, damit Klammern in Literalen
-" die Einrueckung nicht verfaelschen.
+" The line without comments and without string contents, so that braces inside
+" literals do not distort the indentation.
 function! s:Strip(line) abort
   let l:line = a:line
   let l:line = substitute(l:line, "'[^']*'", "''", 'g')
@@ -47,27 +47,27 @@ function! GetFusionIndent() abort
   let l:indent   = indent(l:prev)
   let l:sw       = shiftwidth()
 
-  " Oeffnende Klammern in der Vorzeile erhoehen, schliessende senken.
+  " Opening braces on the previous line increase, closing ones decrease.
   let l:open  = strlen(substitute(l:prevline, '[^{]', '', 'g'))
   let l:close = strlen(substitute(l:prevline, '[^}]', '', 'g'))
   let l:indent += (l:open - l:close) * l:sw
 
-  " AFX: oeffnendes Tag ohne Selbstschluss und ohne passendes Schlusstag
+  " AFX: opening tag without self-closing and without a matching close tag
   if l:prevline =~# '<[A-Za-z_][A-Za-z0-9_.:-]*\%([^>]*\)\?>\s*$'
         \ && l:prevline !~# '/>\s*$'
         \ && l:prevline !~# '</[A-Za-z_][A-Za-z0-9_.:-]*>\s*$'
     let l:indent += l:sw
   endif
-  " Mehrzeiliges Tag: `<Tag` ohne `>` am Zeilenende
+  " Multi-line tag: `<Tag` without `>` at the end of the line
   if l:prevline =~# '<[A-Za-z_][A-Za-z0-9_.:-]*[^>]*$'
     let l:indent += l:sw
   endif
-  " afx`-Beginn
+  " Start of afx`
   if l:prevline =~# 'afx`\s*$'
     let l:indent += l:sw
   endif
 
-  " Aktuelle Zeile beginnt mit einem schliessenden Element -> ausruecken.
+  " The current line starts with a closing element -> outdent.
   if l:curline =~# '^\s*}'
     let l:indent -= l:sw
   endif

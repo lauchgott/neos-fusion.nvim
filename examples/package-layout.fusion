@@ -1,8 +1,8 @@
-# Beispiel: Root.fusion eines Site-Packages
+# Example: the Root.fusion of a site package
 #
-# Typische Ablage:
+# Typical layout:
 #
-#   <projekt>/
+#   <project>/
 #   ├── composer.json                     (require: neos/neos)
 #   ├── flow
 #   ├── Configuration/Settings.yaml
@@ -11,13 +11,13 @@
 #           ├── composer.json
 #           ├── Configuration/NodeTypes.yaml
 #           └── Resources/Private/Fusion/
-#               ├── Root.fusion           <- diese Datei
+#               ├── Root.fusion           <- this file
 #               └── Component/…
 #
-# Die Root-Erkennung des Plugins liefert hier `<projekt>`; der Language Server
-# durchsucht davon ausgehend `folders.packages` (Default u.a.
-# `DistributionPackages`) und darin `folders.fusion`
-# (Default u.a. `Resources/Private/Fusion`).
+# The plugin's root detection returns `<project>` here; starting from there the
+# language server searches `folders.packages` (default includes
+# `DistributionPackages`) and inside those `folders.fusion` (default includes
+# `Resources/Private/Fusion`).
 
 include: Component/**/*.fusion
 include: Content/**/*.fusion
@@ -40,11 +40,11 @@ prototype(Neos.Neos:Page) {
             nodePath = 'main'
         }
 
-        # Meta-Eigenschaften
+        # Meta properties
         @context.mainNavigation = ${q(site).children('[instanceof Neos.Neos:Document]')}
         @process.debug = ${value}
     }
 }
 
-# Deprecated-Prototypen, die der Language Server markiert:
+# Deprecated prototypes the language server flags:
 # Neos.Fusion:Array -> Neos.Fusion:Join, Neos.Fusion:Collection -> Neos.Fusion:Loop

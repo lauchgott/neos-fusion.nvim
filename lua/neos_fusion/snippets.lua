@@ -1,10 +1,10 @@
---- Snippet-Anbindung.
+--- Snippet integration.
 ---
---- Die Snippets liegen als VSCode-kompatibles JSON unter `snippets/fusion.json`
---- und koennen von jedem Loader gelesen werden, der dieses Format versteht.
---- Mit LuaSnip registriert das Plugin sie explizit. blink.cmp durchsucht den
---- runtimepath nicht; dort muss das Verzeichnis in der blink-Konfiguration
---- stehen (siehe M.blink_hint()).
+--- The snippets live as VSCode-compatible JSON in `snippets/fusion.json` and
+--- can be read by any loader that understands that format. With LuaSnip the
+--- plugin registers them explicitly. blink.cmp does not search the
+--- runtimepath; there the directory has to be listed in the blink
+--- configuration (see M.blink_hint()).
 local config = require("neos_fusion.config")
 local util = require("neos_fusion.util")
 
@@ -17,7 +17,7 @@ function M.snippets_dir()
   return util.join(util.plugin_root(), "snippets")
 end
 
---- Welche Snippet-Engine ist vorhanden?
+--- Which snippet engine is present?
 ---@return "luasnip"|"blink"|nil
 function M.engine()
   if pcall(require, "luasnip.loaders.from_vscode") then
@@ -29,14 +29,14 @@ function M.engine()
   return nil
 end
 
---- Die Suchpfade, die blink.cmp fuer VSCode-Snippets verwendet.
+--- The search paths blink.cmp uses for VSCode snippets.
 ---
---- blink durchsucht **nicht** den runtimepath. Laut
---- `blink/cmp/sources/snippets/default/registry.lua` gilt:
+--- blink does **not** search the runtimepath. According to
+--- `blink/cmp/sources/snippets/default/registry.lua`:
 ---   search_paths = { stdpath("config") .. "/snippets" }
---- und zusaetzlich, bei `friendly_snippets = true`, alle
---- runtimepath-Eintraege, deren Pfad auf `friendly.snippets` passt.
---- Ein Plugin-Verzeichnis wird also nie automatisch gefunden.
+--- plus, with `friendly_snippets = true`, all runtimepath entries whose path
+--- matches `friendly.snippets`.
+--- A plugin directory is therefore never found automatically.
 ---@return string[]
 function M.blink_search_paths()
   local ok, cfg = pcall(require, "blink.cmp.config")
@@ -45,7 +45,7 @@ function M.blink_search_paths()
   end
   local paths = vim.tbl_get(cfg, "sources", "providers", "snippets", "opts", "search_paths")
   if type(paths) ~= "table" then
-    -- Nutzer hat nichts gesetzt: blinks Default.
+    -- The user set nothing: blink's default.
     paths = { vim.fn.stdpath("config") .. "/snippets" }
   end
   return vim.tbl_map(function(path)
@@ -53,7 +53,7 @@ function M.blink_search_paths()
   end, paths)
 end
 
---- Kennt blink.cmp das Snippetverzeichnis dieses Plugins?
+--- Does blink.cmp know this plugin's snippet directory?
 ---@return boolean
 function M.in_blink_search_paths()
   local want = M.snippets_dir()
@@ -65,12 +65,12 @@ function M.in_blink_search_paths()
   return false
 end
 
---- Fertiger lazy.nvim-Spec-Ausschnitt, der das Verzeichnis eintraegt.
+--- Ready-made lazy.nvim spec excerpt that adds the directory.
 ---@return string
 function M.blink_hint()
   return table.concat({
-    "blink.cmp durchsucht das Plugin-Verzeichnis nicht selbst. In die",
-    "lazy.nvim-Spec aufnehmen:",
+    "blink.cmp does not search the plugin directory on its own. Add this to",
+    "the lazy.nvim spec:",
     "",
     '  {',
     '    "saghen/blink.cmp",',
@@ -88,17 +88,16 @@ function M.blink_hint()
     "    end,",
     '  },',
     "",
-    "Verzeichnis dieses Plugins: " .. M.snippets_dir(),
+    "Directory of this plugin: " .. M.snippets_dir(),
   }, "\n")
 end
 
---- Registriert die Snippets bei der vorhandenen Engine.
+--- Registers the snippets with whichever engine is present.
 ---
---- LuaSnip braucht das Verzeichnis explizit. blink.cmp findet
---- VSCode-Snippetverzeichnisse selbst, indem es den runtimepath nach
---- `snippets/package.json` durchsucht — dort ist nichts zu tun, sobald das
---- Plugin geladen ist.
----@param force boolean|nil  erneut registrieren, auch wenn schon geschehen
+--- LuaSnip needs the directory explicitly. With blink.cmp nothing can be
+--- registered from here — the path has to be part of the blink configuration
+--- itself (see M.blink_hint()).
+---@param force boolean|nil  register again, even if already done
 ---@return boolean ok
 function M.setup(force)
   local cfg = config.get()
@@ -119,11 +118,11 @@ function M.setup(force)
   end
 
   if engine == "blink" then
-    -- Bei blink.cmp kann das Plugin nichts registrieren: die Snippet-Registry
-    -- wird einmalig beim Erzeugen der Source gebaut (blink-Setup), also bevor
-    -- ein ft-lazy geladenes Plugin ueberhaupt existiert. Nachtraegliches
-    -- Anpassen der Konfiguration bleibt wirkungslos. Der Pfad muss deshalb in
-    -- der blink-Konfiguration selbst stehen — siehe M.blink_hint().
+    -- With blink.cmp the plugin cannot register anything: the snippet registry
+    -- is built once when the source is created (blink setup), i.e. before an
+    -- ft-lazy plugin even exists. Adjusting the configuration afterwards has
+    -- no effect. The path therefore has to be in the blink configuration
+    -- itself — see M.blink_hint().
     registered = true
     if mode == true and not M.in_blink_search_paths() then
       util.warn(M.blink_hint())
@@ -132,7 +131,7 @@ function M.setup(force)
   end
 
   if mode == true then
-    util.warn("Keine Snippet-Engine gefunden (LuaSnip oder blink.cmp) — Snippets wurden nicht registriert.")
+    util.warn("No snippet engine found (LuaSnip or blink.cmp) — snippets were not registered.")
   end
   return false
 end

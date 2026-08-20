@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Syntaxpruefung aller Lua-Dateien des Plugins mit dem Neovim-eigenen LuaJIT.
+# Syntax check of all the plugin's Lua files with Neovim's own LuaJIT.
 set -euo pipefail
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 fail=0

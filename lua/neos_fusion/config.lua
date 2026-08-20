@@ -1,45 +1,45 @@
---- Konfiguration von neos-fusion.nvim.
+--- Configuration of neos-fusion.nvim.
 ---
---- `M.defaults.server.settings.neosFusionLsp` bildet exakt die Defaults der
---- VSCode-Extension `SimonSchmidt.vscode-neos-fusion-lsp` (v0.3.16) nach.
---- Der Language Server liest die Konfiguration ausschliesslich in
---- `workspace/didChangeConfiguration` und initialisiert erst dort seine
---- Workspaces; fehlende Schluessel fuehren serverseitig zu Laufzeitfehlern.
---- Deshalb sind alle Zweige vollstaendig vorbelegt.
+--- `M.defaults.server.settings.neosFusionLsp` mirrors exactly the defaults of
+--- the VSCode extension `SimonSchmidt.vscode-neos-fusion-lsp` (v0.3.16).
+--- The language server reads the configuration only in
+--- `workspace/didChangeConfiguration` and initializes its workspaces there;
+--- missing keys cause runtime errors on the server side. That is why every
+--- branch is fully pre-populated.
 local util = require("neos_fusion.util")
 
 local M = {}
 
---- Standardwerte.
+--- Default values.
 M.defaults = {
-  --- Dateityp-Erkennung.
+  --- Filetype detection.
   filetypes = {
-    --- `*.fusion` als Filetype `fusion` erkennen.
+    --- Detect `*.fusion` as filetype `fusion`.
     fusion = true,
-    --- Zusaetzlich `*.afx` als `fusion` erkennen. Standardmaessig aus:
-    --- die Endung ist in Neos nicht gebraeuchlich (siehe docs/ANALYSE.md).
+    --- Additionally detect `*.afx` as `fusion`. Off by default: the extension
+    --- is uncommon in Neos (see docs/ANALYSE.md).
     afx = false,
   },
 
-  --- Mitgelieferte Vim-Syntax laden.
-  ---   true  — immer (Tree-sitter hat trotzdem Vorrang, sobald es laeuft)
-  ---   false — nie; dann greift ausschliesslich Tree-sitter
+  --- Load the bundled Vim syntax.
+  ---   true  — always (Tree-sitter still takes precedence once it runs)
+  ---   false — never; then only Tree-sitter applies
   syntax = true,
 
-  --- Tree-sitter-Anbindung.
+  --- Tree-sitter integration.
   treesitter = {
-    --- Beim Oeffnen einer Fusion-Datei pruefen, ob der Parser `fusion`
-    --- vorhanden ist, und `vim.treesitter.start()` aufrufen.
+    --- When a Fusion file is opened, check whether the `fusion` parser is
+    --- available and call `vim.treesitter.start()`.
     enable = true,
-    --- Einmalig pro Session warnen, wenn der Parser fehlt.
+    --- Warn once per session when the parser is missing.
     notify_missing = false,
   },
 
-  --- ftplugin-Verhalten.
+  --- ftplugin behaviour.
   editor = {
-    --- commentstring fuer Fusion. "//" oder "#".
+    --- commentstring for Fusion. "//" or "#".
     commentstring = "// %s",
-    --- Einrueckung setzen (shiftwidth/expandtab/indentexpr).
+    --- Set the indentation (shiftwidth/expandtab/indentexpr).
     indent = true,
     shiftwidth = 4,
     expandtab = true,
@@ -47,68 +47,67 @@ M.defaults = {
 
   --- Snippets.
   snippets = {
-    --- Snippets bei der vorhandenen Engine registrieren (LuaSnip oder
-    --- blink.cmp). `true` warnt zusaetzlich, wenn keine Engine gefunden wird.
-    --- Der Schluesselname ist aus Kompatibilitaetsgruenden `luasnip`.
+    --- Register the snippets with whichever engine is present (LuaSnip or
+    --- blink.cmp). `true` additionally warns when no engine is found.
+    --- The key name is `luasnip` for compatibility reasons.
     --- "auto" | true | false
     luasnip = "auto",
   },
 
-  --- Language-Server-Anbindung.
+  --- Language server integration.
   server = {
-    --- LSP ueberhaupt starten.
+    --- Start the LSP at all.
     enable = true,
 
-    --- Explizites Kommando. Wenn gesetzt, entfaellt jede Autoerkennung.
-    --- Beispiel: { "node", "/pfad/zu/out/main.js", "--stdio" }
+    --- Explicit command. When set, all auto-detection is skipped.
+    --- Example: { "node", "/path/to/out/main.js", "--stdio" }
     cmd = nil,
 
-    --- Node-Binary fuer die Autoerkennung.
+    --- Node binary used for auto-detection.
     node = "node",
 
-    --- Server-Version fuer `:NeosFusionInstallServer`.
-    --- Wird als `neos-fusion-ls@<version>` installiert.
+    --- Server version for `:NeosFusionInstallServer`.
+    --- Installed as `neos-fusion-ls@<version>`.
     version = "0.3.16",
 
-    --- npm-Binary fuer den Installer.
+    --- npm binary for the installer.
     npm = "npm",
 
-    --- Installationsverzeichnis. Default: stdpath("data")/neos-fusion.nvim/server
+    --- Installation directory. Default: stdpath("data")/neos-fusion.nvim/server
     install_dir = nil,
 
-    --- Nach einer im Projekt installierten Server-Kopie suchen
+    --- Look for a server copy installed inside the project
     --- (`<root>/node_modules/neos-fusion-ls/out/main.js`).
     prefer_local = true,
 
-    --- stdout des Servers bereinigen.
-    --- Der Server loggt mit `console.log` auf stdout und zerstoert damit das
-    --- LSP-Framing (die VSCode-Extension nutzt IPC statt stdio, dort faellt
-    --- das nicht auf). Der mitgelieferte Wrapper `bin/neos-fusion-ls-stdio.js`
-    --- leitet console.* nach stderr um. Abschalten nur zu Debugzwecken.
+    --- Sanitize the server's stdout.
+    --- The server logs with `console.log` to stdout and thereby breaks the LSP
+    --- framing (the VSCode extension uses IPC instead of stdio, where this
+    --- goes unnoticed). The bundled wrapper `bin/neos-fusion-ls-stdio.js`
+    --- redirects console.* to stderr. Disable for debugging only.
     sanitize_stdout = true,
 
-    --- Automatisch beim Oeffnen einer Fusion-Datei starten.
+    --- Start automatically when a Fusion file is opened.
     autostart = true,
 
-    --- Wird an `vim.lsp.start` durchgereicht.
+    --- Passed through to `vim.lsp.start`.
     on_attach = nil,
     capabilities = nil,
 
-    --- Zusaetzliche Dateiendungen, fuer die der Client attachen soll.
-    --- Der Server versteht nur Fusion-Dokumente.
+    --- Additional filetypes the client should attach to.
+    --- The server only understands Fusion documents.
     filetypes = { "fusion" },
 
-    --- Root-Erkennung, zweistufig.
+    --- Root detection, two-tier.
     ---
-    --- `root_markers` sind starke Marker: sie belegen ein Neos-/Flow-Projekt.
-    --- Nur wenn keiner davon gefunden wird, greifen die schwachen Marker aus
-    --- `root_fallback_markers`.
+    --- `root_markers` are strong markers: they prove a Neos/Flow project.
+    --- The weak markers from `root_fallback_markers` only apply when none of
+    --- them is found.
     ---
-    --- Der Unterschied ist bei Monorepos entscheidend. Liegt das Neos-Projekt
-    --- in einem Unterordner (z.B. `<repo>/app/`), das `.git` aber im
-    --- Repo-Wurzelverzeichnis, wuerde eine einstufige Liste zusammen mit
-    --- `root_outermost` das Repo-Wurzelverzeichnis waehlen — dort findet der
-    --- Server dann keine Packages.
+    --- The difference is decisive for monorepos. If the Neos project lives in
+    --- a subdirectory (e.g. `<repo>/app/`) while `.git` sits at the repository
+    --- root, a single-tier list combined with `root_outermost` would pick the
+    --- repository root — where the server then finds no packages.
     root_markers = {
       "flow",
       "flow.bat",
@@ -117,48 +116,49 @@ M.defaults = {
       "Packages",
       "Configuration/Settings.yaml",
     },
-    --- Schwache Marker: nur wenn kein starker Marker gefunden wurde.
+    --- Weak markers: only used when no strong marker was found.
     root_fallback_markers = { ".git" },
-    --- Bei mehreren Kandidaten derselben Stufe das aeusserste Verzeichnis
-    --- waehlen. Entspricht `getOuterMostWorkspaceFolder` der VSCode-Extension.
+    --- With several candidates on the same tier, pick the outermost
+    --- directory. Matches `getOuterMostWorkspaceFolder` of the VSCode
+    --- extension.
     root_outermost = true,
-    --- Fallback, wenn kein Marker gefunden wird: Verzeichnis der Datei.
+    --- Fallback when no marker is found: the directory of the file.
     root_fallback_to_file_dir = true,
 
-    --- Relative Pfade in `settings.neosFusionLsp.folders.packages` beim Start
-    --- gegen die Projektwurzel aufloesen.
-    --- Notwendig, weil der Server sie mit `fs.existsSync()` gegen das
-    --- Arbeitsverzeichnis des Prozesses prueft und der Ignore-Filter
-    --- absolute Pfade erwartet.
+    --- Resolve relative paths in `settings.neosFusionLsp.folders.packages`
+    --- against the project root at startup.
+    --- Necessary because the server checks them with `fs.existsSync()`
+    --- against the working directory of the process, and the ignore filter
+    --- expects absolute paths.
     resolve_package_folders = true,
 
-    --- Datei-Aenderungen als `workspace/didChangeWatchedFiles` melden.
-    --- Der Server registriert selbst keine Watcher (das erledigte in VSCode
-    --- der Client), braucht die Events aber, um Caches zu aktualisieren.
+    --- Report file changes as `workspace/didChangeWatchedFiles`.
+    --- The server registers no watchers itself (in VSCode the client did
+    --- that), but it needs the events to refresh its caches.
     watch_files = true,
     watch_patterns = { "*.fusion", "*.php", "*.yaml", "*.yml", "*.xlf" },
 
-    --- Fortschritts-/Busy-Notifications des Servers anzeigen.
-    --- Der Server sendet nicht standardisierte `custom/...`-Notifications.
+    --- Show the server's progress/busy notifications.
+    --- The server sends non-standard `custom/...` notifications.
     progress = {
-      --- Handler registrieren, damit Neovim keine "unhandled notification"
-      --- Warnungen protokolliert.
+      --- Register handlers so that Neovim logs no "unhandled notification"
+      --- warnings.
       handle = true,
-      --- Zusaetzlich via `vim.notify` ausgeben.
+      --- Additionally emit them via `vim.notify`.
       notify = false,
     },
 
-    --- Muss gesetzt bleiben: der Server liest
-    --- `params.initializationOptions.textDocumentSync.openClose` ohne
-    --- Absicherung und schlaegt sonst beim `initialize` fehl.
+    --- Must stay set: the server reads
+    --- `params.initializationOptions.textDocumentSync.openClose` without any
+    --- guard and otherwise fails during `initialize`.
     init_options = {
       textDocumentSync = {
         openClose = true,
       },
     },
 
-    --- Server-Konfiguration, 1:1 die Struktur, die der Server unter
-    --- `settings.neosFusionLsp` erwartet.
+    --- Server configuration, exactly the structure the server expects under
+    --- `settings.neosFusionLsp`.
     settings = {
       neosFusionLsp = {
         folders = {
@@ -239,8 +239,8 @@ M.defaults = {
           -- "disabled" | "literal" | "always"
           depth = "literal",
         },
-        --- Nur fuer die VSCode-Extension relevant; der Server ignoriert es.
-        --- Wird der Vollstaendigkeit halber mitgesendet.
+        --- Only relevant for the VSCode extension; the server ignores it.
+        --- Sent along for completeness.
         extensions = {
           modify = false,
         },
@@ -252,8 +252,8 @@ M.defaults = {
 ---@type table|nil
 local current = nil
 
---- Liefert die aktive Konfiguration. Ohne vorheriges `setup()` sind es die
---- Defaults, damit ein blosses `require("neos_fusion")` nie fehlschlaegt.
+--- Returns the active configuration. Without a previous `setup()` these are
+--- the defaults, so that a bare `require("neos_fusion")` never fails.
 ---@return table
 function M.get()
   if current == nil then
@@ -267,7 +267,7 @@ function M.is_configured()
   return current ~= nil
 end
 
---- Mischt Nutzeroptionen in die Defaults.
+--- Merges user options into the defaults.
 ---@param opts table|nil
 ---@return table
 function M.setup(opts)
@@ -275,7 +275,7 @@ function M.setup(opts)
   return current
 end
 
---- Installationsverzeichnis fuer den vom Plugin verwalteten Server.
+--- Installation directory for the server managed by the plugin.
 ---@return string
 function M.install_dir()
   local cfg = M.get()

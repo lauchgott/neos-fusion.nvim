@@ -1,7 +1,7 @@
 {
   "Neos.Fusion:Component": {
     "prefix": "component",
-    "description": "Prototyp auf Basis von Neos.Fusion:Component mit AFX-Renderer",
+    "description": "Prototype based on Neos.Fusion:Component with an AFX renderer",
     "body": [
       "prototype(${1:Vendor.Site}:${2:Component.Name}) < prototype(Neos.Fusion:Component) {",
       "\t${3:title} = ''",
@@ -15,9 +15,9 @@
       "$0"
     ]
   },
-  "Content-Prototyp": {
+  "Content prototype": {
     "prefix": "contentcomponent",
-    "description": "Content-Prototyp auf Basis von Neos.Neos:ContentComponent",
+    "description": "Content prototype based on Neos.Neos:ContentComponent",
     "body": [
       "prototype(${1:Vendor.Site}:${2:Content.Name}) < prototype(Neos.Neos:ContentComponent) {",
       "\t${3:title} = \\${q(node).property('${3:title}')}",
@@ -29,38 +29,52 @@
       "$0"
     ]
   },
-  "Prototyp (leer)": {
+  "Prototype (empty)": {
     "prefix": "prototype",
-    "description": "Prototyp-Definition",
+    "description": "Prototype definition",
     "body": [
       "prototype(${1:Vendor.Site}:${2:Name}) < prototype(${3:Neos.Fusion:Component}) {",
       "\t$0",
       "}"
     ]
   },
-  "Prototyp erweitern": {
+  "Extend a prototype": {
     "prefix": "extend",
-    "description": "Bestehenden Prototyp erweitern",
-    "body": ["prototype(${1:Neos.Neos:Page}) {", "\t$0", "}"]
+    "description": "Extend an existing prototype",
+    "body": [
+      "prototype(${1:Neos.Neos:Page}) {",
+      "\t$0",
+      "}"
+    ]
   },
-  "AFX-Renderer": {
+  "AFX renderer": {
     "prefix": "renderer",
-    "description": "renderer mit AFX",
-    "body": ["renderer = afx`", "\t$0", "`"]
+    "description": "renderer using AFX",
+    "body": [
+      "renderer = afx`",
+      "\t$0",
+      "`"
+    ]
   },
-  "Eel-Ausdruck": {
+  "Eel expression": {
     "prefix": "eel",
-    "description": "Eel-Ausdruck",
-    "body": ["\\${${1:props.value}}"]
+    "description": "Eel expression",
+    "body": [
+      "\\${${1:props.value}}"
+    ]
   },
   "Neos.Fusion:Join": {
     "prefix": "join",
-    "description": "Neos.Fusion:Join (ehemals Array)",
-    "body": ["${1:content} = Neos.Fusion:Join {", "\t${2:item} = ${3:''}", "}"]
+    "description": "Neos.Fusion:Join (formerly Array)",
+    "body": [
+      "${1:content} = Neos.Fusion:Join {",
+      "\t${2:item} = ${3:''}",
+      "}"
+    ]
   },
   "Neos.Fusion:Loop": {
     "prefix": "loop",
-    "description": "Neos.Fusion:Loop (ehemals Collection)",
+    "description": "Neos.Fusion:Loop (formerly Collection)",
     "body": [
       "${1:items} = Neos.Fusion:Loop {",
       "\titems = \\${${2:props.items}}",
@@ -73,7 +87,7 @@
   },
   "Neos.Fusion:Map": {
     "prefix": "map",
-    "description": "Neos.Fusion:Map (ehemals RawCollection)",
+    "description": "Neos.Fusion:Map (formerly RawCollection)",
     "body": [
       "${1:items} = Neos.Fusion:Map {",
       "\titems = \\${${2:props.items}}",
@@ -84,12 +98,16 @@
   },
   "Neos.Fusion:DataStructure": {
     "prefix": "datastructure",
-    "description": "Neos.Fusion:DataStructure (ehemals RawArray)",
-    "body": ["${1:data} = Neos.Fusion:DataStructure {", "\t${2:key} = ${3:''}", "}"]
+    "description": "Neos.Fusion:DataStructure (formerly RawArray)",
+    "body": [
+      "${1:data} = Neos.Fusion:DataStructure {",
+      "\t${2:key} = ${3:''}",
+      "}"
+    ]
   },
   "Neos.Fusion:Case": {
     "prefix": "case",
-    "description": "Neos.Fusion:Case mit Matchern",
+    "description": "Neos.Fusion:Case with matchers",
     "body": [
       "${1:content} = Neos.Fusion:Case {",
       "\t${2:matcherName} {",
@@ -118,46 +136,66 @@
   "Neos.Fusion:Value": {
     "prefix": "value",
     "description": "Neos.Fusion:Value",
-    "body": ["${1:name} = Neos.Fusion:Value {", "\tvalue = \\${${2:props.value}}", "}"]
+    "body": [
+      "${1:name} = Neos.Fusion:Value {",
+      "\tvalue = \\${${2:props.value}}",
+      "}"
+    ]
   },
-  "Resource-URI": {
+  "Resource URI": {
     "prefix": "resource",
-    "description": "Statische Ressource referenzieren",
-    "body": ["'resource://${1:Vendor.Site}/Public/${2:Images/logo.svg}'"]
+    "description": "Reference a static resource",
+    "body": [
+      "'resource://${1:Vendor.Site}/Public/${2:Images/logo.svg}'"
+    ]
   },
   "@if": {
     "prefix": "@if",
-    "description": "Bedingung",
-    "body": ["@if.${1:condition} = \\${${2:props.value} ? true : false}"]
+    "description": "Condition",
+    "body": [
+      "@if.${1:condition} = \\${${2:props.value} ? true : false}"
+    ]
   },
   "@process": {
     "prefix": "@process",
     "description": "Processor",
-    "body": ["@process.${1:name} = \\${${2:value}}"]
+    "body": [
+      "@process.${1:name} = \\${${2:value}}"
+    ]
   },
   "@context": {
     "prefix": "@context",
-    "description": "Kontextvariable setzen",
-    "body": ["@context.${1:name} = \\${${2:value}}"]
+    "description": "Set a context variable",
+    "body": [
+      "@context.${1:name} = \\${${2:value}}"
+    ]
   },
   "@apply": {
     "prefix": "@apply",
-    "description": "Eigenschaften uebernehmen",
-    "body": ["@apply.${1:name} = \\${${2:props}}"]
+    "description": "Apply properties",
+    "body": [
+      "@apply.${1:name} = \\${${2:props}}"
+    ]
   },
   "Translation": {
     "prefix": "translate",
-    "description": "Neos.Neos:Translation bzw. Translate-Helper",
-    "body": ["\\${Translation.translate('${1:id}', '${2:fallback}', [], '${3:Main}', '${4:Vendor.Site}')}"]
+    "description": "Neos.Neos:Translation or the Translate helper",
+    "body": [
+      "\\${Translation.translate('${1:id}', '${2:fallback}', [], '${3:Main}', '${4:Vendor.Site}')}"
+    ]
   },
   "fusion-ignore": {
     "prefix": "ignore",
-    "description": "Diagnose des Language Servers fuer die naechste Zeile unterdruecken",
-    "body": ["// @fusion-ignore"]
+    "description": "Suppress the language server diagnostic for the next line",
+    "body": [
+      "// @fusion-ignore"
+    ]
   },
   "fusion-ignore-block": {
     "prefix": "ignoreblock",
-    "description": "Diagnose des Language Servers fuer den Block unterdruecken",
-    "body": ["// @fusion-ignore-block"]
+    "description": "Suppress the language server diagnostic for the block",
+    "body": [
+      "// @fusion-ignore-block"
+    ]
   }
 }

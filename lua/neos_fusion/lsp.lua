@@ -1,9 +1,9 @@
---- LSP-Anbindung fuer den Neos Fusion Language Server.
+--- LSP integration for the Neos Fusion language server.
 ---
---- Es wird bewusst kein `nvim-lspconfig` vorausgesetzt: upstream existiert
---- (Stand der Analyse) keine `fusion`-Serverdefinition. Gestartet wird ueber
---- `vim.lsp.start`, das ab Neovim 0.10 verfuegbar ist und den Client bei
---- gleicher Konfiguration und gleicher Root wiederverwendet.
+--- `nvim-lspconfig` is deliberately not required: upstream has (as of this
+--- analysis) no `fusion` server definition. The server is started through
+--- `vim.lsp.start`, available since Neovim 0.10, which reuses the client for
+--- the same configuration and the same root.
 local config = require("neos_fusion.config")
 local util = require("neos_fusion.util")
 
@@ -11,9 +11,9 @@ local M = {}
 
 M.CLIENT_NAME = "neos_fusion_ls"
 
---- Pro Root einmalig gemeldete Fehler, damit nicht jeder Buffer nervt.
+--- Errors reported once per root, so that not every buffer nags.
 local reported = {}
---- Zuletzt gesehener Fortschrittstext je Client (fuer :NeosFusionServerInfo).
+--- Last progress text seen per client (for :NeosFusionServerInfo).
 M.progress = {}
 
 ---@return string
@@ -21,10 +21,10 @@ function M.wrapper_path()
   return util.join(util.plugin_root(), "bin", "neos-fusion-ls-stdio.js")
 end
 
---- Sucht die Server-Einstiegsdatei.
+--- Looks for the server entry file.
 ---@param root string|nil
 ---@return string|nil main_js
----@return string source  Beschreibung der Fundstelle
+---@return string source  description of where it was found
 function M.find_server_main(root)
   local cfg = config.get()
   local installer = require("neos_fusion.installer")
@@ -32,20 +32,20 @@ function M.find_server_main(root)
   if cfg.server.prefer_local and root then
     local local_main = installer.main_in_prefix(root)
     if util.is_file(local_main) then
-      return local_main, "Projekt (node_modules)"
+      return local_main, "project (node_modules)"
     end
   end
 
   if installer.is_installed() then
-    return installer.managed_main(), "Plugin-Installation"
+    return installer.managed_main(), "plugin installation"
   end
 
-  -- Globale npm-Installation: die Bin-Datei hat keinen Shebang und kein
-  -- Ausfuehrungsbit, ist als Symlink auf out/main.js aber gut auffindbar.
+  -- Global npm installation: the bin file has no shebang and no executable
+  -- bit, but as a symlink to out/main.js it is easy to locate.
   local bin = vim.fn.exepath("neos-fusion-ls")
   if bin == "" then
-    -- exepath findet nur ausfuehrbare Dateien; zusaetzlich direkt im
-    -- npm-Bin-Verzeichnis nachsehen.
+    -- exepath only finds executable files; additionally look directly inside
+    -- the npm bin directory.
     for _, candidate in ipairs(vim.fn.split(vim.env.PATH or "", ":")) do
       local link = util.join(candidate, "neos-fusion-ls")
       if util.exists(link) then
@@ -57,21 +57,21 @@ function M.find_server_main(root)
   if bin ~= "" and util.exists(bin) then
     local real = vim.fn.resolve(bin)
     if util.is_file(real) then
-      return vim.fs.normalize(real), "globale npm-Installation"
+      return vim.fs.normalize(real), "global npm installation"
     end
   end
 
-  return nil, "nicht gefunden"
+  return nil, "not found"
 end
 
---- Baut das Startkommando.
+--- Builds the start command.
 ---@param root string|nil
 ---@return string[]|nil cmd
 ---@return string source
 function M.resolve_cmd(root)
   local cfg = config.get()
   if cfg.server.cmd and #cfg.server.cmd > 0 then
-    return vim.deepcopy(cfg.server.cmd), "server.cmd (Konfiguration)"
+    return vim.deepcopy(cfg.server.cmd), "server.cmd (configuration)"
   end
 
   local main, source = M.find_server_main(root)
@@ -81,7 +81,7 @@ function M.resolve_cmd(root)
 
   local node = cfg.server.node
   if vim.fn.executable(node) ~= 1 then
-    return nil, ("`%s` nicht ausfuehrbar"):format(node)
+    return nil, ("`%s` is not executable"):format(node)
   end
 
   if cfg.server.sanitize_stdout then
@@ -90,7 +90,7 @@ function M.resolve_cmd(root)
   return { node, main, "--stdio" }, source
 end
 
---- Root-Erkennung fuer ein Neos-/Flow-Projekt.
+--- Root detection for a Neos/Flow project.
 ---@param start_path string
 ---@return string|nil
 function M.find_root(start_path)
@@ -98,15 +98,15 @@ function M.find_root(start_path)
   local start = vim.fs.normalize(start_path)
   local dir = util.is_dir(start) and start or vim.fs.dirname(start)
 
-  --- Trifft einer der Marker auf `d` zu?
+  --- Does one of the markers apply to `d`?
   local function matches(d, markers)
     for _, marker in ipairs(markers or {}) do
       local p = util.join(d, marker)
       if util.exists(p) then
-        -- composer.json allein ist schwach: eine Paket-composer.json liegt in
-        -- jedem Neos-Package. Nur uebernehmen, wenn sie nach Neos/Flow aussieht.
+        -- composer.json on its own is weak: every Neos package contains a
+        -- package composer.json. Only accept it if it looks like Neos/Flow.
         if marker == "composer.json" and not util.composer_looks_like_neos(p) then
-          -- weiter mit dem naechsten Marker
+          -- continue with the next marker
         else
           return true
         end
@@ -115,7 +115,7 @@ function M.find_root(start_path)
     return false
   end
 
-  --- Alle Verzeichnisse von `dir` aufwaerts, die auf `markers` passen.
+  --- All directories from `dir` upwards that match `markers`.
   local function collect(markers)
     local found = {}
     local current = dir
@@ -137,8 +137,8 @@ function M.find_root(start_path)
     return cfg.server.root_outermost and list[#list] or list[1]
   end
 
-  -- Starke Marker gewinnen immer, egal wie tief sie liegen. Ein `.git` weiter
-  -- oben darf ein Neos-Projekt in einem Unterordner nicht ueberstimmen.
+  -- Strong markers always win, no matter how deep they sit. A `.git` further
+  -- up must not outvote a Neos project living in a subdirectory.
   local strong = pick(collect(cfg.server.root_markers))
   if strong then
     return strong
@@ -155,7 +155,7 @@ function M.find_root(start_path)
   return nil
 end
 
---- Loest relative Package-Ordner gegen die Projektwurzel auf.
+--- Resolves relative package folders against the project root.
 ---@param settings table
 ---@param root string
 ---@return table
@@ -183,8 +183,8 @@ local function resolve_settings(settings, root)
   return resolved
 end
 
---- Handler fuer die nicht standardisierten `custom/...`-Notifications des
---- Servers. Ohne sie protokolliert Neovim "unhandled notification".
+--- Handlers for the server's non-standard `custom/...` notifications. Without
+--- them Neovim logs "unhandled notification".
 ---@param cfg table
 ---@return table<string, function>
 local function custom_handlers(cfg)
@@ -222,7 +222,7 @@ local function custom_handlers(cfg)
   }
 end
 
---- Baut die vollstaendige Client-Konfiguration.
+--- Builds the complete client configuration.
 ---@param root string
 ---@return table
 function M.client_config(root)
@@ -230,19 +230,19 @@ function M.client_config(root)
   local cmd = M.resolve_cmd(root)
 
   local capabilities = vim.lsp.protocol.make_client_capabilities()
-  -- Der Server initialisiert seine Workspaces ausschliesslich aus
-  -- `params.workspaceFolders`; die Faehigkeit muss angekuendigt werden.
+  -- The server initializes its workspaces exclusively from
+  -- `params.workspaceFolders`; the capability has to be announced.
   capabilities.workspace = capabilities.workspace or {}
   capabilities.workspace.workspaceFolders = true
   capabilities.workspace.configuration = true
 
-  -- Completion-Engine erkennen. blink.cmp zuerst (LazyVim-Default ab v14),
-  -- danach nvim-cmp. Beide sind optional; ohne Engine bleiben die
-  -- Standard-Capabilities.
+  -- Detect the completion engine. blink.cmp first (LazyVim default since v14),
+  -- then nvim-cmp. Both are optional; without an engine the default
+  -- capabilities stay in place.
   local ok_blink, blink = pcall(require, "blink.cmp")
   if ok_blink and type(blink.get_lsp_capabilities) == "function" then
-    -- Zweites Argument `false` = die uebergebene Tabelle nicht mit den
-    -- Neovim-Defaults auffuellen (das haben wir oben schon getan).
+    -- Second argument `false` = do not fill the passed table with the Neovim
+    -- defaults (already done above).
     local ok_caps, merged = pcall(blink.get_lsp_capabilities, capabilities, false)
     if ok_caps and type(merged) == "table" then
       capabilities = merged
@@ -260,8 +260,8 @@ function M.client_config(root)
   return {
     name = M.CLIENT_NAME,
     cmd = cmd,
-    -- Wichtig: relative Package-Ordner prueft der Server mit
-    -- `fs.existsSync()` gegen das Arbeitsverzeichnis des Prozesses.
+    -- Important: the server checks relative package folders with
+    -- `fs.existsSync()` against the working directory of the process.
     cmd_cwd = root,
     root_dir = root,
     workspace_folders = {
@@ -275,7 +275,7 @@ function M.client_config(root)
   }
 end
 
---- Startet (oder findet) den Client fuer den aktuellen Buffer.
+--- Starts (or finds) the client for the current buffer.
 ---@param bufnr integer|nil
 ---@return integer|nil client_id
 function M.start(bufnr)
@@ -286,8 +286,8 @@ function M.start(bufnr)
     return nil
   end
 
-  -- Nur echte Dateien: Sonderbuffer (health://, oil://, Terminals) wuerden
-  -- sonst eine unsinnige Projektwurzel erzeugen.
+  -- Real files only: special buffers (health://, oil://, terminals) would
+  -- otherwise produce a nonsensical project root.
   local fname = util.buf_file_path(bufnr)
   if not fname then
     return nil
@@ -303,9 +303,9 @@ function M.start(bufnr)
     if not reported[root] then
       reported[root] = true
       util.error(table.concat({
-        "Kein Neos-Fusion-Language-Server gefunden (" .. source .. ").",
-        "Installation:  :NeosFusionInstallServer",
-        "Details:       :NeosFusionServerInfo  /  :checkhealth neos_fusion",
+        "No Neos Fusion language server found (" .. source .. ").",
+        "Install:  :NeosFusionInstallServer",
+        "Details:  :NeosFusionServerInfo  /  :checkhealth neos_fusion",
       }, "\n"))
     end
     return nil
@@ -320,7 +320,7 @@ function M.start(bufnr)
   return client_id
 end
 
---- Alle Clients dieses Plugins.
+--- All clients belonging to this plugin.
 ---@return vim.lsp.Client[]
 function M.clients()
   local get = vim.lsp.get_clients or vim.lsp.get_active_clients
@@ -330,16 +330,16 @@ end
 function M.stop()
   local clients = M.clients()
   if #clients == 0 then
-    util.notify("Kein laufender Fusion-Language-Server.")
+    util.notify("No running Fusion language server.")
     return
   end
   for _, client in ipairs(clients) do
     client:stop()
   end
-  util.notify(("%d Client(s) gestoppt."):format(#clients))
+  util.notify(("Stopped %d client(s)."):format(#clients))
 end
 
---- Stoppt alle Clients und startet fuer alle Fusion-Buffer neu.
+--- Stops all clients and restarts them for every Fusion buffer.
 function M.restart()
   local buffers = {}
   for _, client in ipairs(M.clients()) do
@@ -361,35 +361,35 @@ function M.restart()
         M.start(bufnr)
       end
     end
-    util.notify("Language Server neu gestartet.")
+    util.notify("Language server restarted.")
   end, 500)
 end
 
---- Sendet die Konfiguration erneut. Der Server baut daraufhin alle
---- Fusion-Workspaces neu auf (siehe `LanguageServer.onDidChangeConfiguration`).
+--- Sends the configuration again. The server then rebuilds all Fusion
+--- workspaces (see `LanguageServer.onDidChangeConfiguration`).
 function M.reload_workspace()
   local clients = M.clients()
   if #clients == 0 then
-    util.notify("Kein laufender Fusion-Language-Server.")
+    util.notify("No running Fusion language server.")
     return
   end
   for _, client in ipairs(clients) do
     client:notify("workspace/didChangeConfiguration", { settings = client.settings })
   end
-  util.notify("Workspace-Reload angefordert.")
+  util.notify("Workspace reload requested.")
 end
 
---- Setzt das Log-Level zur Laufzeit und loest damit einen Reload aus.
+--- Sets the log level at runtime and thereby triggers a reload.
 ---@param level string "error"|"info"|"verbose"|"debug"
 function M.set_log_level(level)
   local valid = { error = true, info = true, verbose = true, debug = true }
   if not valid[level] then
-    util.error(("Ungueltiges Log-Level `%s` (error|info|verbose|debug)."):format(level))
+    util.error(("Invalid log level `%s` (error|info|verbose|debug)."):format(level))
     return
   end
   local clients = M.clients()
   if #clients == 0 then
-    util.notify("Kein laufender Fusion-Language-Server.")
+    util.notify("No running Fusion language server.")
     return
   end
   for _, client in ipairs(clients) do
@@ -400,14 +400,14 @@ function M.set_log_level(level)
     client.settings = settings
     client:notify("workspace/didChangeConfiguration", { settings = settings })
   end
-  util.notify(("Log-Level auf `%s` gesetzt."):format(level))
+  util.notify(("Log level set to `%s`."):format(level))
 end
 
 local watchers = {}
 
---- Der Server registriert selbst keine `workspace/didChangeWatchedFiles`
---- (in VSCode uebernahm das die Client-Konfiguration `synchronize.fileEvents`).
---- Deshalb meldet das Plugin Schreibvorgaenge im Projekt selbst.
+--- The server does not register `workspace/didChangeWatchedFiles` itself (in
+--- VSCode the client configuration `synchronize.fileEvents` took care of it).
+--- The plugin therefore reports writes inside the project on its own.
 ---@param root string
 ---@param client_id integer
 function M.attach_file_watcher(root, client_id)
@@ -439,12 +439,12 @@ function M.attach_file_watcher(root, client_id)
   })
 end
 
---- Ausfuehrliche Diagnose fuer den aktuellen Buffer.
+--- Detailed diagnostics for the current buffer.
 ---
---- Trennt die drei haeufigen Ursachen fuer „Hover/Definition liefert nichts":
----   1. Der Server hat keine Packages gefunden (Ordnernamen passen nicht).
----   2. Die Datei liegt ausserhalb der konfigurierten Fusion-Ordner.
----   3. Der Cursor steht auf einem Ziel, fuer das der Server nichts anbietet.
+--- Separates the three common causes of "hover/definition returns nothing":
+---   1. The server found no packages (folder names do not match).
+---   2. The file lies outside the configured Fusion folders.
+---   3. The cursor sits on a target the server offers nothing for.
 ---@param bufnr integer|nil
 function M.doctor(bufnr)
   bufnr = util.resolve_buf(bufnr)
@@ -454,7 +454,7 @@ function M.doctor(bufnr)
   end
 
   local file = util.buf_file_path(bufnr)
-  add_line("Datei:        %s", file or "— (kein Datei-Buffer)")
+  add_line("File:         %s", file or "— (not a file buffer)")
   add_line("Filetype:     %s", vim.bo[bufnr].filetype)
 
   local clients = vim.tbl_filter(function(c)
@@ -462,22 +462,22 @@ function M.doctor(bufnr)
   end, M.clients())
 
   if #clients == 0 then
-    add_line("Client:       — kein Client an diesem Buffer")
+    add_line("Client:       — no client attached to this buffer")
     add_line("")
-    add_line("Naechster Schritt: :NeosFusionStart bzw. :NeosFusionServerInfo")
+    add_line("Next step: :NeosFusionStart or :NeosFusionServerInfo")
     return table.concat(out, "\n")
   end
 
   local client = clients[1]
   local root = client.config.root_dir
   add_line("Client:       #%d", client.id)
-  add_line("Projektwurzel: %s", root or "—")
+  add_line("Project root: %s", root or "—")
 
   local settings = client.settings or {}
   local folders = vim.tbl_get(settings, "neosFusionLsp", "folders") or {}
 
   add_line("")
-  add_line("folders.packages (der Server prueft diese Pfade mit existsSync):")
+  add_line("folders.packages (the server checks these paths with existsSync):")
   local found_any = false
   for _, dir in ipairs(folders.packages or {}) do
     local exists = util.is_dir(dir)
@@ -487,12 +487,12 @@ function M.doctor(bufnr)
     add_line("  [%s] %s", exists and "x" or " ", dir)
   end
   if not found_any then
-    add_line("  -> KEIN Ordner vorhanden. Der Server faellt auf")
-    add_line("     workspaceAsPackageFallback zurueck und indexiert nur die Wurzel.")
-    add_line("     Loesung: settings.neosFusionLsp.folders.packages anpassen.")
+    add_line("  -> NO directory present. The server falls back to")
+    add_line("     workspaceAsPackageFallback and only indexes the root.")
+    add_line("     Fix: adjust settings.neosFusionLsp.folders.packages.")
   end
 
-  -- Welche Ordner mit Packages gibt es tatsaechlich unter der Wurzel?
+  -- Which package directories actually exist below the root?
   if root then
     local candidates = {}
     for name, type_ in vim.fs.dir(root) do
@@ -502,11 +502,11 @@ function M.doctor(bufnr)
     end
     table.sort(candidates)
     add_line("")
-    add_line("Verzeichnisse in der Projektwurzel: %s", table.concat(candidates, ", "))
+    add_line("Directories in the project root: %s", table.concat(candidates, ", "))
   end
 
   add_line("")
-  add_line("folders.fusion (Fusion-Ordner innerhalb eines Packages):")
+  add_line("folders.fusion (Fusion folders inside a package):")
   for _, dir in ipairs(folders.fusion or {}) do
     add_line("  %s", dir)
   end
@@ -519,55 +519,55 @@ function M.doctor(bufnr)
         break
       end
     end
-    add_line("  -> Diese Datei liegt %s einem dieser Ordner (%s)",
-      matched and "IN" or "NICHT in", rel)
+    add_line("  -> This file is %s one of those folders (%s)",
+      matched and "INSIDE" or "NOT inside", rel)
   end
 
-  -- Sondiert den Projektindex des Servers. `workspace/symbol` antwortet aus
-  -- dem Index aller Packages, nicht nur aus der offenen Datei.
+  -- Probes the server's project index. `workspace/symbol` answers from the
+  -- index of all packages, not only from the open file.
   add_line("")
   local ws = client:request_sync("workspace/symbol", { query = "" }, 5000, bufnr)
   local ws_count = (ws and type(ws.result) == "table") and #ws.result or 0
-  add_line("workspace/symbol (leere Query): %d Prototypen im Index", ws_count)
+  add_line("workspace/symbol (empty query): %d prototypes in the index", ws_count)
   if ws_count == 0 then
-    add_line("  -> Der Index ist leer. Der Server hat keine Fusion-Dateien")
-    add_line("     gefunden. Ursache liegt in folders.packages/folders.fusion oben.")
+    add_line("  -> The index is empty. The server found no Fusion files.")
+    add_line("     The cause is in folders.packages/folders.fusion above.")
   else
     local names = {}
     for i = 1, math.min(5, ws_count) do
       table.insert(names, tostring(ws.result[i].name))
     end
-    add_line("  Beispiele: %s", table.concat(names, ", "))
+    add_line("  Examples: %s", table.concat(names, ", "))
   end
 
-  -- Sondiert, ob der Server die geoeffnete Datei geparst hat.
+  -- Probes whether the server has parsed the open file.
   add_line("")
   local sym = client:request_sync("textDocument/documentSymbol",
     { textDocument = { uri = vim.uri_from_bufnr(bufnr) } }, 5000, bufnr)
   local symbols = sym and sym.result or nil
   if type(symbols) == "table" and #symbols > 0 then
-    add_line("documentSymbol: %d Eintraege — die Datei wird geparst.", #symbols)
-    add_line("  erster: %s", tostring(symbols[1].name))
-    add_line("  -> Parsing und Indexierung laufen. Liefert Hover trotzdem nichts,")
-    add_line("     steht der Cursor auf keinem unterstuetzten Ziel. Der Server")
-    add_line("     antwortet nur auf Prototypnamen, Fusion-Properties,")
-    add_line("     Eel-Helper, Resource-URIs und Controller/Action-Angaben.")
+    add_line("documentSymbol: %d entries — the file is being parsed.", #symbols)
+    add_line("  first: %s", tostring(symbols[1].name))
+    add_line("  -> Parsing and indexing work. If hover still returns nothing,")
+    add_line("     the cursor is not on a supported target. The server only")
+    add_line("     answers for prototype names, Fusion properties, Eel helpers,")
+    add_line("     resource URIs and controller/action references.")
   else
-    add_line("documentSymbol: LEER — der Server kennt diese Datei nicht.")
-    add_line("  -> Ursache liegt in folders.packages/folders.fusion oben,")
-    add_line("     nicht am Cursor. Logdetails: :NeosFusionSetLogLevel debug")
-    add_line("     und dann :NeosFusionLog")
+    add_line("documentSymbol: EMPTY — the server does not know this file.")
+    add_line("  -> The cause is in folders.packages/folders.fusion above,")
+    add_line("     not the cursor. For log details: :NeosFusionSetLogLevel debug")
+    add_line("     and then :NeosFusionLog")
   end
 
   return table.concat(out, "\n")
 end
 
---- Statusinformationen fuer :NeosFusionServerInfo / :checkhealth.
+--- Status information for :NeosFusionServerInfo / :checkhealth.
 ---@return string
 function M.status()
   local clients = M.clients()
   if #clients == 0 then
-    return "Kein Client aktiv."
+    return "No client active."
   end
   local lines = {}
   for _, client in ipairs(clients) do

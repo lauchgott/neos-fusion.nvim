@@ -1,10 +1,10 @@
--- End-to-End-Smoke-Test gegen den echten Language Server.
+-- End-to-end smoke test against the real language server.
 --
--- Aufruf:
---   NEOS_FUSION_LS_MAIN=/pfad/zu/neos-fusion-ls/out/main.js \
+-- Usage:
+--   NEOS_FUSION_LS_MAIN=/path/to/neos-fusion-ls/out/main.js \
 --     nvim --clean -n -i NONE --headless -u tests/minimal_init.lua -l tests/lsp_smoke.lua
 --
--- Ohne installierten Server wird der Test von scripts/test.sh uebersprungen.
+-- Without an installed server scripts/test.sh skips this test.
 local root_plugin = _G.NEOS_FUSION_TEST_ROOT or vim.fn.getcwd()
 
 local passed, failed = 0, 0
@@ -18,7 +18,7 @@ local function check(name, ok, detail)
   end
 end
 
--- Testprojekt anlegen.
+-- Create the test project.
 local project = vim.fn.tempname()
 local fusion_dir = project .. "/DistributionPackages/Vendor.Site/Resources/Private/Fusion"
 vim.fn.mkdir(fusion_dir, "p")
@@ -48,11 +48,11 @@ end
 
 require("neos_fusion").setup(opts)
 
-io.write("\nneos-fusion.nvim — LSP-Smoke-Test\n\n")
+io.write("\nneos-fusion.nvim — LSP smoke test\n\n")
 
 local lsp = require("neos_fusion.lsp")
 local cmd, source = lsp.resolve_cmd(project)
-check("Startkommando ermittelt (" .. tostring(source) .. ")", cmd ~= nil, source)
+check("start command determined (" .. tostring(source) .. ")", cmd ~= nil, source)
 if not cmd then
   vim.cmd("cq")
 end
@@ -60,49 +60,49 @@ io.write("        cmd: " .. table.concat(cmd, " ") .. "\n")
 
 vim.cmd.edit(file)
 local bufnr = vim.api.nvim_get_current_buf()
-check("Filetype ist fusion", vim.bo.filetype == "fusion", vim.bo.filetype)
+check("filetype is fusion", vim.bo.filetype == "fusion", vim.bo.filetype)
 
 local client_id = lsp.start(bufnr)
-check("Client gestartet", client_id ~= nil)
+check("client started", client_id ~= nil)
 if not client_id then
   vim.cmd("cq")
 end
 
--- Auf initialize warten.
+-- Wait for initialize.
 local function wait(pred, timeout)
   return vim.wait(timeout or 20000, pred, 100)
 end
 
 local client = vim.lsp.get_client_by_id(client_id)
-check("initialize erfolgreich (kein stdout-Framing-Fehler)", wait(function()
+check("initialize succeeded (no stdout framing error)", wait(function()
   client = vim.lsp.get_client_by_id(client_id)
   return client ~= nil and client.initialized == true
-end), "Timeout beim initialize")
+end), "timeout during initialize")
 
 client = vim.lsp.get_client_by_id(client_id)
 if not client then
-  io.write("  FAIL  Client verschwunden\n")
+  io.write("  FAIL  client disappeared\n")
   vim.cmd("cq")
 end
 
 local caps = client.server_capabilities or {}
-check("hoverProvider angekuendigt", caps.hoverProvider == true)
-check("definitionProvider angekuendigt", caps.definitionProvider == true)
-check("completionProvider angekuendigt", caps.completionProvider ~= nil)
-check("semanticTokensProvider angekuendigt", caps.semanticTokensProvider ~= nil)
-check("documentSymbolProvider angekuendigt", caps.documentSymbolProvider == true)
+check("hoverProvider announced", caps.hoverProvider == true)
+check("definitionProvider announced", caps.definitionProvider == true)
+check("completionProvider announced", caps.completionProvider ~= nil)
+check("semanticTokensProvider announced", caps.semanticTokensProvider ~= nil)
+check("documentSymbolProvider announced", caps.documentSymbolProvider == true)
 
-check("Client an Buffer attached", wait(function()
+check("client attached to the buffer", wait(function()
   return client.attached_buffers and client.attached_buffers[bufnr] == true
-end), "nicht attached")
+end), "not attached")
 
--- Der Server initialisiert die Workspaces erst nach didChangeConfiguration.
--- Neovim sendet das automatisch, weil `settings` gesetzt ist.
+-- The server initializes its workspaces only after didChangeConfiguration.
+-- Neovim sends that automatically because `settings` is set.
 vim.wait(3000, function()
   return false
 end, 200)
 
--- Hover auf `Neos.Fusion:Component` (Zeile 1, Spalte ~55).
+-- Hover on `Neos.Fusion:Component` (line 1, column ~55).
 local hover_result, hover_err
 client:request("textDocument/hover", {
   textDocument = { uri = vim.uri_from_bufnr(bufnr) },
@@ -111,15 +111,15 @@ client:request("textDocument/hover", {
   hover_err = err
   hover_result = result or false
 end, bufnr)
-check("Hover liefert Antwort", wait(function()
+check("hover returns an answer", wait(function()
   return hover_result ~= nil
-end, 10000), hover_err and vim.inspect(hover_err) or "Timeout")
+end, 10000), hover_err and vim.inspect(hover_err) or "timeout")
 if type(hover_result) == "table" then
   local value = vim.tbl_get(hover_result, "contents", "value") or ""
   io.write("        hover: " .. value:gsub("\n", " ") .. "\n")
-  check("Hover nennt den Prototyp", value:find("Neos.Fusion:Component", 1, true) ~= nil, value)
+  check("hover names the prototype", value:find("Neos.Fusion:Component", 1, true) ~= nil, value)
 else
-  check("Hover nennt den Prototyp", false, "keine contents")
+  check("hover names the prototype", false, "no contents")
 end
 
 -- documentSymbol
@@ -129,35 +129,35 @@ client:request("textDocument/documentSymbol", {
 }, function(_, result)
   symbols = result or false
 end, bufnr)
-check("documentSymbol liefert Antwort", wait(function()
+check("documentSymbol returns an answer", wait(function()
   return symbols ~= nil
-end, 10000), "Timeout")
+end, 10000), "timeout")
 if type(symbols) == "table" and symbols[1] then
   io.write("        symbol: " .. tostring(symbols[1].name) .. "\n")
-  check("documentSymbol nennt den Prototyp", symbols[1].name == "Vendor.Site:Component.Teaser", symbols[1].name)
+  check("documentSymbol names the prototype", symbols[1].name == "Vendor.Site:Component.Teaser", symbols[1].name)
 else
-  check("documentSymbol nennt den Prototyp", false, vim.inspect(symbols))
+  check("documentSymbol names the prototype", false, vim.inspect(symbols))
 end
 
--- Diagnostics: fehlerhafte Zeile einfuegen und auf publishDiagnostics warten.
+-- Diagnostics: insert a broken line and wait for publishDiagnostics.
 vim.api.nvim_buf_set_lines(bufnr, 1, 1, false, { "    unclosed = afx`<div>`" })
 vim.cmd("silent write")
 local ns_ok = wait(function()
   return #vim.diagnostic.get(bufnr) > 0
 end, 15000)
-check("Diagnostics werden geliefert", ns_ok, "keine Diagnostics innerhalb von 15s")
+check("diagnostics are delivered", ns_ok, "no diagnostics within 15s")
 if ns_ok then
   local d = vim.diagnostic.get(bufnr)[1]
   io.write(("        diagnostic: %s\n"):format((d.message or ""):gsub("\n", " ")))
 end
 
--- Sauber beenden.
+-- Shut down cleanly.
 client:stop(true)
-check("Client stoppt", wait(function()
+check("client stops", wait(function()
   return vim.lsp.get_client_by_id(client_id) == nil or client:is_stopped()
 end, 10000))
 
-io.write(("\n%d bestanden, %d fehlgeschlagen\n"):format(passed, failed))
+io.write(("\n%d passed, %d failed\n"):format(passed, failed))
 if failed > 0 then
   vim.cmd("cq")
 end
