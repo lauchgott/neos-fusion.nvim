@@ -11,7 +11,7 @@ Fuehrt aus:
 1. **Lua-Syntaxpruefung** (`scripts/luacheck.sh`) — `loadfile()` mit dem
    LuaJIT von Neovim ueber alle `*.lua` des Plugins.
 2. **Node-Syntaxpruefung** — `node --check bin/neos-fusion-ls-stdio.js`.
-3. **Neovim-Testsuite** (`tests/run.lua`) — 39 Tests, ohne externe
+3. **Neovim-Testsuite** (`tests/run.lua`) — 41 Tests, ohne externe
    Abhaengigkeiten (kein Plenary, kein Busted).
 4. **LSP-Smoke-Test** (`tests/lsp_smoke.lua`) — 16 Tests gegen den echten
    Server. Wird uebersprungen, wenn kein Server verfuegbar ist.
@@ -34,7 +34,7 @@ Umgebung: macOS 15 (Darwin 25.6.0, x86_64-Shell), **Neovim 0.12.0**,
 | --- | --- |
 | Lua-Syntaxpruefung | 12/12 ok |
 | Node-Syntaxpruefung | ok |
-| `tests/run.lua` | **39 bestanden, 0 fehlgeschlagen** |
+| `tests/run.lua` | **41 bestanden, 0 fehlgeschlagen** |
 | `tests/lsp_smoke.lua` | **16 bestanden, 0 fehlgeschlagen** |
 
 ---
@@ -56,7 +56,7 @@ Umgebung wie oben, sofern nicht anders vermerkt.
 | 5 | Kommentarverhalten | **bestanden** | `commentstring = "// %s"`, `comments` enthaelt `//`, `#`, `/* */` (`tests/run.lua`) |
 | 6 | Einrueckungsverhalten | **bestanden** | `gg=G` auf verschachtelte Fusion-Bloecke und AFX-Tags liefert 4/8 Spalten und korrektes Ausruecken (`tests/run.lua`, zwei Tests) |
 | 7 | Snippets vorhanden und gueltig | **bestanden** | 21 Snippets, JSON validiert (`tests/run.lua`) |
-| 8 | Snippet-Registrierung (LuaSnip / blink.cmp) | **nicht verifizierbar** | Keine der beiden Engines ist in der Testumgebung installiert. Getestet ist, dass `engine()` nur `luasnip`/`blink`/`nil` liefert und `setup()` ohne Engine nicht wirft |
+| 8 | Snippet-Registrierung (LuaSnip / blink.cmp) | **bestanden** (blink.cmp) | Vom Nutzer bestaetigt, nachdem das Snippetverzeichnis in `search_paths` eingetragen wurde — `:checkhealth` meldet „blink.cmp kennt das Snippetverzeichnis des Plugins". Automatisiert geprueft: `blink_search_paths()`, `in_blink_search_paths()`, `blink_hint()` gegen eine vorgetaeuschte blink-Konfiguration. LuaSnip bleibt **nicht verifizierbar** (nicht installiert) |
 | 9 | `:help neos-fusion` funktioniert | **bestanden** | `helptags doc/` erzeugt 37 Tags; `:help neos-fusion` oeffnet die Datei |
 | 10 | Import ohne `setup()` bricht nicht ab | **bestanden** | `tests/run.lua`: „require('neos_fusion') ohne setup() wirft nicht“ |
 | 11 | Alle Kommandos registriert | **bestanden** | 10 Kommandos geprueft (`tests/run.lua`) |

@@ -17,7 +17,7 @@ Einrueckung, Snippets und die Anbindung des Language Servers
 | Kommentare | `commentstring = "// %s"`, `comments` fuer `//`, `#`, `/* */` |
 | LSP | Hover, Goto Definition, Find References, Document-/Workspace-Symbols, Completion, Code Actions, CodeLens, Rename, Signature Help, Inlay Hints, Semantic Tokens, Diagnostics |
 | Serverinstallation | `:NeosFusionInstallServer` (npm, versionierbar, kein Netzzugriff beim Start) |
-| Snippets | 21 Fusion-/AFX-Snippets im VSCode-Format, Autoregistrierung fuer LuaSnip und blink.cmp |
+| Snippets | 21 Fusion-/AFX-Snippets im VSCode-Format; LuaSnip automatisch, blink.cmp per Suchpfad-Eintrag |
 | Diagnose | `:checkhealth neos_fusion`, `:NeosFusionServerInfo`, `:NeosFusionLog` |
 
 ---
@@ -29,7 +29,8 @@ Einrueckung, Snippets und die Anbindung des Language Servers
   deklariert `engines: { node: "*" }`)
 * **npm** — nur fuer `:NeosFusionInstallServer`
 * optional **nvim-treesitter** fuer den Parser `fusion`
-* optional eine Snippet-Engine: **LuaSnip** oder **blink.cmp**
+* optional eine Snippet-Engine: **LuaSnip** (automatisch) oder **blink.cmp**
+  (ein Eintrag in `search_paths`, siehe unten)
 * optional eine Completion-Engine: **blink.cmp** oder **nvim-cmp**
   (`cmp_nvim_lsp`) — beide werden automatisch erkannt
 
@@ -364,9 +365,43 @@ deckt diesen Fall ab. Details: [`docs/ANALYSE.md`](docs/ANALYSE.md).
 | `resource`, `translate` | Resource-URI, Uebersetzung |
 | `ignore`, `ignoreblock` | `@fusion-ignore` fuer Server-Diagnosen |
 
-**LuaSnip**: wird automatisch registriert.
-**blink.cmp**: findet das Verzeichnis selbst ueber die runtimepath-Suche nach
-`snippets/package.json` — es ist nichts zu konfigurieren.
+**LuaSnip**: wird automatisch registriert, nichts zu tun.
+
+**blink.cmp**: muss konfiguriert werden. blink durchsucht den runtimepath
+**nicht** — laut `blink/cmp/sources/snippets/default/registry.lua` gilt
+`search_paths = { stdpath("config") .. "/snippets" }` plus
+runtimepath-Eintraege, deren Pfad auf `friendly.snippets` passt. Ein
+Plugin-Verzeichnis wird daher nie automatisch gefunden, und das Plugin kann
+das nicht nachtraeglich richten: blink baut die Snippet-Registry einmalig
+beim Setup, also bevor ein `ft`-lazy geladenes Plugin existiert.
+
+Deshalb in die blink-Spec aufnehmen:
+
+```lua
+{
+  "saghen/blink.cmp",
+  opts = function(_, opts)
+    local dir = require("neos_fusion.snippets").snippets_dir()
+    opts.sources = opts.sources or {}
+    opts.sources.providers = opts.sources.providers or {}
+    local provider = opts.sources.providers.snippets or {}
+    provider.opts = provider.opts or {}
+    local paths = provider.opts.search_paths
+      or { vim.fn.stdpath("config") .. "/snippets" }
+    if not vim.tbl_contains(paths, dir) then
+      table.insert(paths, dir)
+    end
+    provider.opts.search_paths = paths
+    opts.sources.providers.snippets = provider
+  end,
+}
+```
+
+Danach Neovim **neu starten** — `:Lazy reload` genuegt nicht, weil die
+Registry nur beim Setup gebaut wird. `:checkhealth neos_fusion` bestaetigt
+den Eintrag; andernfalls zeigt es die tatsaechlich gesetzten Suchpfade.
+Das `require` laedt das Plugin beim Start; wer das vermeiden will, traegt den
+Pfad direkt ein.
 
 Andere Engines koennen das Verzeichnis direkt einbinden:
 

@@ -7,7 +7,7 @@ Stand: 19.08.2026 — getestet mit Neovim 0.12.0, Node 25.9.0,
 
 ## 1. Was tatsaechlich funktioniert
 
-**Nachgewiesen** (automatisiert getestet, 55 Tests gruen):
+**Nachgewiesen** (automatisiert getestet, 57 Tests gruen):
 
 * Dateityperkennung `.fusion` → `fusion`, auch ohne `setup()`
 * Vim-Fallback-Syntax fuer Fusion, Eel, AFX, Prototypen, Meta-Eigenschaften,
@@ -59,7 +59,7 @@ abgefangen:
 | Punkt | Grund |
 | --- | --- |
 | Vollstaendige Neos-Distribution | Ein echtes Neos-Monorepo ist bestaetigt (Wurzelerkennung, Hover, Goto Definition). Nicht geprueft: eine Installation mit komplett gefuellten `Packages/Framework`, Eel-Helper-Navigation, NodeType-CodeLens, Verhalten bei sehr vielen Packages |
-| Snippet-Registrierung | Weder LuaSnip noch blink.cmp in der Testumgebung installiert. Beide Pfade sind per `pcall` abgesichert; die blink-Variante (runtimepath-Suche nach `snippets/package.json`) ist nicht praktisch nachgewiesen |
+| Snippet-Registrierung mit LuaSnip | Nicht installiert, Pfad per `pcall` abgesichert. blink.cmp ist in der Praxis bestaetigt (mit Suchpfad-Eintrag) |
 | Wirkung von `workspace/didChangeWatchedFiles` | Senden implementiert und ausgeloest, Serverseite nicht isoliert nachgewiesen |
 | Code Actions, CodeLens, Rename, Signature Help, Inlay Hints, Semantic Tokens | Angekuendigt, nicht einzeln durchgespielt |
 | Windows | Nicht getestet. `vim.fs`/`vim.system` sollten portabel sein; `root_markers` enthaelt `flow.bat` |
@@ -103,6 +103,13 @@ Bequemlichkeit, kein Feature der Plattform.
 **Serverversion**
 `0.3.16` ist die letzte stabile Version (`0.3.17-pre-release` vom 25.08.2024
 ist als Vorabversion markiert). Das Projekt ist laut eigener Aussage „WIP“.
+
+**blink.cmp braucht einen Eintrag**
+blink durchsucht den runtimepath nicht, sondern nur
+`stdpath("config")/snippets` und friendly-snippets. Das Snippetverzeichnis
+muss deshalb in `search_paths` stehen. Automatisieren laesst sich das nicht:
+blink baut die Registry einmalig beim Setup, bevor ein `ft`-lazy Plugin
+existiert.
 
 **Kein `mason.nvim`-Paket**
 Der Server ist nicht in der Mason-Registry. Ein eigener Registry-Eintrag
